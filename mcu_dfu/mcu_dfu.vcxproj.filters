@@ -1,0 +1,246 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="源文件\imple">
+      <UniqueIdentifier>{abed7a98-bf98-4cf4-a836-0fc8bec6e49f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\engine">
+      <UniqueIdentifier>{6ebeec1a-1948-42b1-b584-4d5b6d9a3a75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\bcsp">
+      <UniqueIdentifier>{79c39f25-4040-4d69-98a5-a130bd5f7a45}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\uart">
+      <UniqueIdentifier>{dea2c448-4a64-46a0-9502-783fca97c458}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="com.c">
+      <Filter>源文件\uart</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\api.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\bcspstack.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\btrace.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\bytebuffer.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\channelcontrol.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\crc.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\environment.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\linkstablishmententity.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\muxsender.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\packet.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\packetbuffer.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\packetdeliverer.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\packetpool.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\queue.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\receiver.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\requestrouter.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\scheduler.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\sequencesender.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\shutdown.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\signal.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\slipreceiver.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\slipsender.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\stackconfiguration.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\timer.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\transferrequest.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bcsp\xmitwindow.c">
+      <Filter>源文件\bcsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imple\bcspimplementation_core.c">
+      <Filter>源文件\imple</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imple\BCSPTransport.c">
+      <Filter>源文件\imple</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\DFUEngineBase.c">
+      <Filter>源文件\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\DFURequest.c">
+      <Filter>源文件\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\DFURequestCOM.c">
+      <Filter>源文件\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\DFUTransportCOM.c">
+      <Filter>源文件\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\pdu.c">
+      <Filter>源文件\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imple\usart.c">
+      <Filter>源文件\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="main_0.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="main.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="main_1.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="com.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bcsp\api.h">
+      <Filter>源文件\bcsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bcsp\bcsp_linkage.h">
+      <Filter>源文件\bcsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bcsp\bcsp_signal.h">
+      <Filter>源文件\bcsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bcsp\bcspstack.h">
+      <Filter>源文件\bcsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bcsp\btrace.h">
+      <Filter>源文件\bcsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bcsp\bytebuffer.h">
+      <Filter>源文件\bcsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bcsp\channelcontrol.h">
+      <Filter>源文件\bcsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bcsp\crc.h">
+      <Filter>源文件\bcsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bcsp\environment.h">
+      <Filter>源文件\bcsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bcsp\packet.h">
+      <Filter>源文件\bcsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bcsp\packetbuffer.h">
+      <Filter>源文件\bcsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bcsp\packetdeliverer.h">
+      <Filter>源文件\bcsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bcsp\packetpool.h">
+      <Filter>源文件\bcsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bcsp\queue.h">
+      <Filter>源文件\bcsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bcsp\scheduler.h">
+      <Filter>源文件\bcsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bcsp\shutdown.h">
+      <Filter>源文件\bcsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bcsp\slip.h">
+      <Filter>源文件\bcsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bcsp\slipsender.h">
+      <Filter>源文件\bcsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bcsp\stackconfiguration.h">
+      <Filter>源文件\bcsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bcsp\timer.h">
+      <Filter>源文件\bcsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bcsp\transferrequest.h">
+      <Filter>源文件\bcsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bcsp\xmitwindow.h">
+      <Filter>源文件\bcsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imple\bcspimplementation.h">
+      <Filter>源文件\imple</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imple\bcsptransport.h">
+      <Filter>源文件\imple</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imple\transportconfiguration.h">
+      <Filter>源文件\imple</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\DFUEngine.h">
+      <Filter>源文件\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\DFUEngineBase.h">
+      <Filter>源文件\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\DFURequest.h">
+      <Filter>源文件\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\DFURequestCOM.h">
+      <Filter>源文件\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\DFUTransportCOM.h">
+      <Filter>源文件\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\pdu.h">
+      <Filter>源文件\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imple\usart.h">
+      <Filter>源文件\engine</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
