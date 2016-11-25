@@ -85,8 +85,34 @@ extern char set_event;
 #define EVENT_BCSP_DATA  0x01
 #define EVENT_BCSP_OK   0x80 //(7<<1)
 
+extern uint32 ms_clock(void);
+extern void * Uart_Rcv(void* g);
 //void * Thread2(void *);
 //void * Thread3(void *);
+extern void Uart_Reset(void);
+
+extern uint8 Packet_Rcv_Flag;
+extern uint8 uart_get_data[];
+
+extern uint8 sendpdu_flag;
+
+
+#ifndef max
+#define max(a,b)            (((a) > (b)) ? (a) : (b))
+#endif
+
+#ifndef min
+#define min(a,b)            (((a) < (b)) ? (a) : (b))
 #endif
 
 
+// Maximum detach timeout and retries
+static const uint16 detachTimeout = 15000;
+static const uint8 detachRetries = 5;
+
+
+extern uint16 BlockNum;
+extern uint8 * abuff;
+extern uint16 BufferLength;
+
+#endif

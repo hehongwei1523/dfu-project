@@ -50,41 +50,88 @@ uint8 reply_test[16] = {
    0x01, 0x00, 0x12, 0x0a, 0xff, 0xff, 0x42, 0x09,
 };
 
-uint8 Packet_Rdv_Flag = 0x00;
-uint8 uart_get_data[30] = { 0 };
-void Packet_Rcv(void)
+void Packet_Rcv_download(void)
 {
-	Packet_Rdv_Flag = 0x00;
-uart_get = uart_handle;
-while (uart_get != uart_ptr)
-{
-	int i = 0, j = 0, k = 0;
-
-	if (*uart_get == 0xc0)
+	uart_get = uart_handle; 
+	while (uart_get != uart_ptr)
 	{
-		uart_get_next();//跳过0xc0
-
-		while (*uart_get != 0xc0)
+		int j = 0, k = 0;
+		if (*uart_get == 0xc0)
 		{
-			j++;
-			printf("0x%x  ", *uart_get);
-			//校验payload格式： 0x00 0x00 0x0x ,满足条件则赋值给数组
-			if ((j == 5) && (*uart_get == 0x00)) k++;
-			if ((j == 6) && (*uart_get == 0x00)) k++;
-			if ((j == 7) && (*uart_get != 0x00)) k++;
-
-			if (j > 8 && k == 3)
+			uart_get_next();//跳过0xc0
+			while (*uart_get != 0xc0)
 			{
-				
-				uart_get_data[i++] = *uart_get; 
-				Packet_Rdv_Flag = 0x01;
+				j++;
+				//校验payload格式： 0x00 0x00 0x00 0x00,满足条件
+				if ( (j>4) && (j<9) && (*uart_get == 0x00)) k++;
+				if ( k == 4 )
+				{
+					Packet_Rcv_Flag = 1;
+					printf("0x%x  ", *uart_get);  //调试打印 :不打印时，会接收不到数据
+				}
+				uart_get_next();
 			}
-			uart_get_next();
 		}
+		uart_get_next();
+	}
+}
+//uint8 Packet_Rcv_Flag = 0x00;
+//uint8 uart_get_data[30] = { 0 };
+
+void Packet_Rcv(void) //这部分内容处理得不是很好
+{
+	Packet_Rcv_Flag = 0x00;
+
+	uart_get = uart_handle;//uart_ptr;// 
+	while (uart_get != uart_ptr)
+	{
+		int i = 0, j = 0, k = 0;
+
+		if (*uart_get == 0xc0)
+		{
+			uart_get_next();//跳过0xc0
+			//bcspImplementation.mRCVBuffer[bcspImplementation.mRCVBytesAvailable++] = 0xc0;
+			while (*uart_get != 0xc0)
+			{
+				j++;
+				//bcspImplementation.mRCVBuffer[bcspImplementation.mRCVBytesAvailable++] = *uart_get;
+				//校验payload格式： 0x00 0x00 0x0x 0x00,满足条件则赋值给数组
+				if ((j == 5) && (*uart_get == 0x00)) k++;
+				if ((j == 6) && (*uart_get == 0x00)) k++;
+				if ((j == 7) && (*uart_get != 0x00)) k++;
+				if ((j == 8) && (*uart_get == 0x00)) k++;
+
+				if ( (j > 8) && (k == 4) )
+				{
+					Packet_Rcv_Flag =1;
+					printf("0x%x  ", *uart_get);  //调试打印 :不打印时，会接收不到数据
+					uart_get_data[i++] = *uart_get; 			
+				}
+				uart_get_next();
+			}
+
+		}
+		uart_get_next();
+		//bcspImplementation.mRCVBuffer[bcspImplementation.mRCVBytesAvailable++] = 0xc0;
 
 	}
-	uart_get_next();
 }
+
+void sendpdu_download(void)
+{
+	Packet_Rcv_Flag = 0x00; //接收函数之前必须清理标志位，否则导致判断直接跳过，接收不到数据
+	uint32 time_begin = ms_clock();
+
+	while (Packet_Rcv_Flag != 1)
+	{	
+		Packet_Rcv_download();//等待芯片返回的应答payload，否则一直循环
+		if ((ms_clock() - time_begin) > 5000) //接收超时则跳出循环,时间稍长些 2016-11-25
+		{
+			printf("download time out \n");
+			break;
+		}
+		BCSPImplementation_runStack();
+	}
 }
 
 // Generic control requests
@@ -120,19 +167,26 @@ Result ControlRequest(const struct Setup setup, void *buffer, uint16 bufferLengt
 
     sendpdu( PayLoad_Buff ,requestLength );
 
-    //这个延时处理得不是很好 2016-11-10
-    //Delay_Ms(2000); //延时一下，等待芯片发送的数据
-	//Sleep(2000);
-//*****************************************
+    if( (sendpdu_flag == 1) || (sendpdu_flag == 2) ) return success; //部分函数不需要接收数据，直接退出接收部分
+	//Sleep(5);//发送完命令后，加一点延时，等handle处理完后，再接收payload: 测试表明没用
+
+/*****************************************/
     //串口接收处理过程
-	
-	while (Packet_Rdv_Flag != 1)
+
+	Packet_Rcv_Flag = 0x00; //接收函数之前必须清理标志位，否则导致判断直接跳过，接收不到数据
+	uint32 time_begin = ms_clock();
+	while (Packet_Rcv_Flag != 1)
 	{
-		Packet_Rcv();
+		Packet_Rcv(); //Sleep(2);
+		if ((ms_clock() - time_begin) > 2000) //接收超时则跳出循环 2016-11-22
+		{
+			printf("time out \n");
+			break;
+		}
 	}
-	printf("bb  ");//死循环，等待数据接收
-	//Sleep(2000);
-//*****************************************/
+
+	printf(" Rcv over \n");//数据接收执行完毕
+/*****************************************/
       
     if (replyLength) *replyLength = bufferLength;
      // Decode the reply
@@ -147,7 +201,7 @@ Result ControlRequest(const struct Setup setup, void *buffer, uint16 bufferLengt
       memcpy(buffer, uart_get_data, bufferLength);//注意长度
 
 	  for (int i = 0; i < 30; i++)
-		  uart_get_data[i] = 0x00;
+		  uart_get_data[i] = 0xff; //清零接收缓存数组
 	}
 	else
 	{

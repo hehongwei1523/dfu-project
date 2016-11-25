@@ -38,7 +38,7 @@ static const int comParity = EVENPARITY;
 
 int BCSP_init()
 {
-	hCOMHnd = CreateFile(L"\\\\.\\COM7", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+	hCOMHnd = CreateFile(L"\\\\.\\COM6", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 	// Start a BCSP transport
 	if (hCOMHnd == INVALID_HANDLE_VALUE)
 	{
@@ -93,7 +93,7 @@ int com_init(char *s)
 
 	//sprintf(sPortName, "\\\\.\\%s", s);
     //hCOMHnd = CreateFile(OpenComName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);//FILE_ATTRIBUTE_NORMAL
-	hCOMHnd = CreateFile(L"\\\\.\\COM7", GENERIC_READ | GENERIC_WRITE,0, NULL, OPEN_EXISTING, 0, NULL);
+	hCOMHnd = CreateFile(L"\\\\.\\COM6", GENERIC_READ | GENERIC_WRITE,0, NULL, OPEN_EXISTING, 0, NULL);
 
 	if (hCOMHnd == INVALID_HANDLE_VALUE)
 	{
@@ -110,8 +110,8 @@ int com_init(char *s)
 	COMMTIMEOUTS timeouts; //add 2016-11-16
 	GetCommTimeouts(hCOMHnd, &timeouts);
 	timeouts.ReadIntervalTimeout = 0;
-	timeouts.ReadTotalTimeoutMultiplier = 0;
-	timeouts.ReadTotalTimeoutConstant = 500;//60000;
+	timeouts.ReadTotalTimeoutMultiplier = 10;
+	timeouts.ReadTotalTimeoutConstant = 1;// 500;// 60000;  //2016-11-23 时间缩小,不能为0
 	timeouts.WriteTotalTimeoutMultiplier = 0;
 	timeouts.WriteTotalTimeoutConstant = 0;
 	SetCommTimeouts(hCOMHnd, &timeouts);
@@ -252,7 +252,8 @@ int com_get()
 	DWORD dwRead;
 
 	bRes = ReadFile(hCOMHnd, &data, 1, &dwRead, NULL);
-	/*
+/*	
+	printf("dwRead = 0x%2x ",dwRead);
 	if (!bRes)
 	{
 #if VERBOSE

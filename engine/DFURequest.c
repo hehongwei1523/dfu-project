@@ -3,7 +3,7 @@
 #include "stdbool.h"
 #include "common/types.h"
 #include "DFURequestCOM.h"
- 
+#include  "bcspimplementation.h"
 
 // Is a connection active
 bool connected = 0;
@@ -32,6 +32,7 @@ Result Connect(bool hintDFU)
 {
 	if (!connected)
 	{
+		printf("##########Connect############ \n");
         Result result = RPCConnect(hintDFU);
         if (!result) return result;
 
@@ -56,6 +57,8 @@ Result Disconnect()
 Result RPCDisconnect()
 {
   /* 硬件断开连接 */
+	printf("Disconnect !\n");
+	//BCSPImplementation_deleteBCSP();
 	return success;
 }
 
@@ -85,8 +88,11 @@ Result RPCDnload(uint16 blockNum, void *buffer, uint16 bufferLength)
 
 Result Dnload(uint16 blockNum, const void *buffer, uint16 bufferLength)
 {
-	Result result = PreRPC();   
+	Result result = PreRPC();
+	printf("##########Dnload############ \n");
+	sendpdu_flag = 2;
 	if (result) result = RPCDnload(blockNum, (uint8 *)buffer, bufferLength);
+	sendpdu_flag = 0;
 	return PostRPC(result);
 }
 
@@ -201,10 +207,12 @@ Result RPCAbort()
 Result Reset(bool wait)
 {
 	// Perform the reset
-	Result result = PreRPC();
+	Result result = PreRPC(); 
+	printf("##########Reset############ \n");
+	sendpdu_flag = 1;
 	if (result) result = RPCReset();
 	if (result) result = Disconnect();
-
+	sendpdu_flag = 0;
 	// Allow the device to complete its reset
 	//if (result && wait) result = CheckAbort(delayResetMilliseconds);
 
@@ -214,13 +222,14 @@ Result Reset(bool wait)
 
 Result GetInterfaceDFU(struct InterfaceDescriptor *descriptor)
 {
-  /*
-	if(connected)  //暂时让程序直接从芯片读取信息
+  
+	if(connected)
 	{
-		descriptor = &dfuInterfaceDescriptor;
+		//descriptor = &dfuInterfaceDescriptor;  //直接让地址指向结构体时会赋值不成功，所以下面直接调用函数赋值   2016-11-24
+		memcpy(descriptor, &dfuInterfaceDescriptor, sizeof(struct InterfaceDescriptor));
 		return success;
 	}
-	else */
+	else 
 	{
 		Result result = PreRPC();
 		if (result) result = RPCGetInterfaceDFU(descriptor);
@@ -231,6 +240,7 @@ Result GetInterfaceDFU(struct InterfaceDescriptor *descriptor)
 Result GetDevice(struct DeviceDescriptor *descriptor)
 {
 	Result result = PreRPC();
+	printf("##########GetDevice############ \n");
 	if (result) result = RPCGetDevice(descriptor);
 	return PostRPC(result);
 }
@@ -238,6 +248,7 @@ Result GetDevice(struct DeviceDescriptor *descriptor)
 Result GetFunct(struct DFUFunctionalDescriptor *descriptor)
 {
 	Result result = PreRPC();
+	printf("##########GetFunct############ \n");
 	if (result) result = RPCGetFunct(descriptor);
 	return PostRPC(result);
 }
@@ -253,39 +264,7 @@ Result PreDnload(DFUFile file)
 // Conversion of DFU status codes to DFUEngine result codes
 Result MapDFUStatus(uint8 status, uint8 stringIndex)
 {
-  //Result result ;
-  /*
-	// Special case for vendor-specific failures
-	DFUEngine::Result result(DFUEngine::fail_dfu_unknown);
-	if (status == err_vendor)
-	{
-		// Attempt to obtain a description of the error
-		CStringX description;
-		if (RPCGetString(stringIndex, description) && !description.IsEmpty())
-		{
-			result = DFUEngine::Result(DFUEngine::fail_dfu_vendor_str, description);
-		}
-		else
-		{
-			description.Format(_T("%d"), stringIndex);
-			result = DFUEngine::Result(DFUEngine::fail_dfu_vendor_num, description);
-		}
-	}
-	else
-	{
-		// Attempt to find the appropriate result code
-		for (int index = 0;
-			 index < (sizeof(statusCodeMap) / sizeof(statusCodeMapEntry));
-			 ++index)
-		{
-			if (statusCodeMap[index].status == status)
-			{
-				result = statusCodeMap[index].result;
-				break;
-			}
-		}
-	}
-*/
+ 
 	// Return the result
 	return success;
 }
@@ -322,6 +301,7 @@ Result PostRPC(Result result)
 Result GetStatus(struct DFUStatus *status)
 {
 	Result result = PreRPC();
+	printf("##########GetStatus############ \n");
 	if (result) result = RPCGetStatus(status);
 	return PostRPC(result);
 }
@@ -360,7 +340,10 @@ Result RPCDetach(uint16 timeout)
 Result Detach(uint16 timeout)
 {
 	Result result = PreRPC();
+	printf("##########Detach############ \n");
+	sendpdu_flag = 1;
 	if (result) result = RPCDetach(timeout);
+	sendpdu_flag = 0;
 	return PostRPC(result);
 }
 

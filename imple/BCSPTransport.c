@@ -98,27 +98,34 @@ static void RPC_Func(uint8 *buff,int size)
     setLength(pkt,size);
     setProtocolId(pkt,0x0c) ;//DFU ID
     setProtocolType(pkt,BCSPChannelReliable) ;//BCSPChannelUnreliable); //可靠数据包
-    addPacketToBuffer(bcspImplementation.mStack,&bcspImplementation.mStack->MUXUnreliableInput,pkt) ;//PacketDelivererInput,pkt);//  //RCVInputBuffer,pkt);发送不出 
+	//2016-11-21  这里只有SEQInput的packet能正常收发，MUX会导致ack永远是1，PacketDeliver和RCVInput直接发送不出数据
+    addPacketToBuffer(bcspImplementation.mStack,&bcspImplementation.mStack->SEQInput, pkt);//MUXUnreliableInput //PacketDelivererInput  //RCVInputBuffer,pkt);发送不出 
 }
 
 void sendpdu ( uint8 *buff, int size )
 {
-    uint8 *send_buff;
+   
+	uint8 *send_buff;
     //printf("size = %d ",size);
-    send_buff = (uint8 *)malloc(size * sizeof(uint8));
+    send_buff = (uint8 *)malloc(size * sizeof(uint8)); //不要用这种方法传递数据  2016-11-25 
     memcpy(send_buff,buff,size * sizeof(uint8 ));
-    /*
+#if 0
 {
   uint16 i = 0;
   for( i=0; i<size; i++)
    printf("send_buff[%d] = %x \n",i,send_buff[i]);
-  
-}       */
+}
+#endif
     RPC_Func(send_buff,size);
-    //BCSPImplementation_runStack();
-	BCSPImplementation_Test();
-
-    free(send_buff);
+	//printf("transport packet start \n");
+	/*下载时，文件的buff比较大，需要执行几次runStack函数，因此特殊处理 2016-11-25 */
+	if (sendpdu_flag == 2)
+		sendpdu_download();
+	else
+	    BCSPImplementation_runStack();
+	//BCSPImplementation_Test();
+	//printf("transport packet end \n");
+    free(send_buff); //释放内存空间后，payload的数据为0xdd
 }
 
 void onPacketToChip ( BCTransferRequest * req, BCTransferStatus status, void * info )

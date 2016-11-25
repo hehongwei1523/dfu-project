@@ -160,6 +160,7 @@ void SlipSender(BCSPStack * stack)
 			{
 				//send the frame-start and set up a transmission of the packet header
 				//BTRACE3(SLIPSND,"SLIP - sending start (pkt %p seq %d ack %d)\n",pkt,getSeq(pkt),getAck(pkt)) ;
+				//printf("SLIP - sending start (pkt %p seq %d ack %d)\n", pkt, getSeq(pkt), getAck(pkt));
 				writeByteToByteBuffer(stack,&stack->SLIPByteOutput,0xc0) ;
 				NETWORK_REORDER32(state->XMITheader,pkt->header) ; //make sure endian-ness is correct
 				setupTransmit(state,(uint8*) &state->XMITheader,4,SLIPsendingHeader) ;
@@ -224,6 +225,7 @@ void SlipSender(BCSPStack * stack)
 				//send the frame-end and clear the input packet, signalling that
 				//we are ready to accept another packet.
 				//BTRACE3(SLIPSND,"SLIP - sending end (pkt %p seq %d ack %d)\n",pkt,getSeq(pkt),getAck(pkt)) ;
+				//printf("SLIP - sending end (pkt %p seq %d ack %d)\n", pkt, getSeq(pkt), getAck(pkt));
 				writeByteToByteBuffer(stack,&stack->SLIPByteOutput,0xc0) ;//将要发送的数据移到SLIPByteOutput中
 				state->XMITState = SLIPaboutToSendStart ; 
 				stack->SLIPInputPacket = null ; ;

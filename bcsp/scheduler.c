@@ -143,7 +143,7 @@ uint32 scheduler(BCSPStack * stack,uint32 timeNow)
 				{
 					//call the current task 
 					stack->currentTaskId = id ;
-                    //printf("%d",id);
+                    //printf(" %d ",id);
 					taskList[t](stack) ;
 				}
 			}

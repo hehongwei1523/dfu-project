@@ -8,12 +8,12 @@
 using namespace std;
 
 extern "C" void Device_Init(void); //C++ 调用 C函数
-extern "C" void * Uart_Rcv(void *);
-extern "C" int com_get();
+
 //extern "C" void BCSPImplementation_Test(void);
 extern "C" void main_run(void);
 extern "C" void * Thread2(void *);
 extern "C" void * Thread3(void *);
+extern "C" void * Thread4(void *);
 
 int main()
 {
@@ -23,7 +23,7 @@ int main()
 
 	::CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Thread3, (LPVOID)0, 0, (LPDWORD)0);  // 建立线程
 	
-
+	::CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Thread4, (LPVOID)0, 0, (LPDWORD)0);  // 建立线程
 	while (1)  // 主函数
 	{
 		main_run();

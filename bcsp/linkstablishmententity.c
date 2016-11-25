@@ -48,8 +48,6 @@ void LinkEstablishmentSender(BCSPStack * stack)
 
 	if (stack->loquacity == bcsp_garrulous && stack->confCnt == stack->configuration->confLimit)
 	{
-		printf("Link Establishment ok ! \n");
-		LinkEstablishment_Flag |= 0x02;
 		//block ourselves forever
 		block(stack) ;
 
@@ -154,7 +152,7 @@ void LinkEstablishmentReceive(BCSPStack * stack)
 			setProtocolId(pkt,1) ;
 			setProtocolType(pkt,BCSPChannelUnreliable) ;
 			addPacketToBuffer(stack,&stack->MUXUnreliableInput,pkt) ;
-			printf("this ? position ");//收到Conf数据包后，发送Conf-resp
+			//printf("this ? position ");//收到Conf数据包后，发送Conf-resp
 		}
 	}
 	else
@@ -190,7 +188,10 @@ void LinkEstablishmentReceive(BCSPStack * stack)
 			//we've made it!
 			stack->loquacity = bcsp_garrulous;
 			stack->isUnchoked = true ;
-			
+
+			printf("Link Establishment ok ! \n");
+			LinkEstablishment_Flag |= 0x02;
+
 			setSignal(stack,&stack->unchokeSignal); //wake up rest of stack
 			
 		}

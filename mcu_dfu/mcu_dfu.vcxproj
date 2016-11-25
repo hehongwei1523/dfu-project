@@ -71,7 +71,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>E:\VSProject\mcu_dfu\include;E:\VSProject\mcu_dfu\imple;E:\VSProject\mcu_dfu\engine;E:\VSProject\mcu_dfu\bcsp;$(IncludePath)</IncludePath>
+    <IncludePath>..\include;..\imple;..\engine;..\bcsp;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>

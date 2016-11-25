@@ -2,7 +2,7 @@
 #include "DFURequest.h"
 #include "DFURequestCOM.h"
 #include "DFUTransportCOM.h"
-
+#include "bcspimplementation.h"
 // Standard baud rates
 //static const int standardBaudRates[] = {9600, 14400, 19200, 38400, 57600, 115200, 230400, 460800, 921600, 1382400};
 
@@ -150,37 +150,33 @@ Result AutomaticPassiveBCSP()
   return success;
 }
 
+extern uint8 LinkEstablishment_Flag;
+extern uint8 rcv_count;
 Result RPCConnect(bool hintDFU)  //与芯片建立BCSP联系
 {
-       Result result;
-     //硬件设置
-/*	
-	// Try passive BCSP link establishment once only
-	if (!result && ((sync == sync_unknown) || (sync == sync_enabled)))
-	{
-		result = AutomaticPassiveBCSP();
-	}
+    Result result;
+//free(bcspImplementation.mStack);
+	/*每次连接都初始化BCSP参数*/
+	BCSPImplementation_Environment();
+	BCSPTransport();
+	
+	//BCSPshutdownStack(bcspImplementation.mStack);
 
-	// Retry connecting until successful or give up
-	for (int retries = 0; !result && (retries < retriesConnect); ++retries)
+	rcv_count = 1; 
+	LinkEstablishment_Flag = 0x00;
+	uint32 time_begin = ms_clock();
+	while ( LinkEstablishment_Flag != 0x02)
 	{
-		// Try BCSP with active link establishment
-		if (sync != sync_disabled) result = AutomaticActiveBCSP(true);
-
-		// Try BCSP without link establishment if still not connected
-		if (!result && ((sync == sync_unknown) || (sync == sync_disabled)))
+		if ((ms_clock() - time_begin) > 6000)
 		{
-			result = AutomaticActiveBCSP(false);
+			printf("link time out !\n");
+			return fail_com_fail;//返回错误
 		}
 	}
+	connected = 1;
 
-	// Return the last error if failed after retries
-	if (!result)
-	{
-		protocol = protocol_failed;
-		return result;
-	}
-*/
+	printf("RPCConnect !\n");
+
 	// Successful if this point reached
 	Progress(transport_established);
  
@@ -201,6 +197,8 @@ Result TestPrivateChannel()
 {
 	struct DeviceDescriptor descriptor;
 	//return RPCGetDevice(descriptor);
+
+	return success;
 }
 
 Result ConnectBCSP(const void *port,int baud, bool sync, bool tunneling,void * handle)

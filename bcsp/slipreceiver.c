@@ -273,7 +273,8 @@ void SLIPReceiver(BCSPStack * stack)
         case SLIPexpectEndOfData :
             {
                 uint8 dataByte ;
-                BTRACE4(SLIPRCV,"SLIP received packet - waiting for end %p len %d seq %d ack %d   \n",pkt,getLength(pkt),getSeq(pkt),getAck(pkt)) ; 
+                //BTRACE4(SLIPRCV,
+				//printf("SLIP received packet - waiting for end %p len %d seq %d ack %d   \n",pkt,getLength(pkt),getSeq(pkt),getAck(pkt)) ;
                 //wait for a byte - it had better be a c0 !
                 SYNCBLKwaitForEntriesInByteBuffer(stack,&stack->SLIPByteInput,1) ;
                 dataByte = readByteFromByteBuffer(stack,&stack->SLIPByteInput) ;
@@ -291,8 +292,10 @@ void SLIPReceiver(BCSPStack * stack)
                 //wow, we've finally got a good packet - we've already checked the header
                 //checksum and CRC and we know the length is what we expected so pass
                 //it on to the receiver task.
-                BTRACE4(SLIPRCV,"SLIP received good packet %p len %d seq %d ack %d   \n",pkt,getLength(pkt),getSeq(pkt),getAck(pkt)) ; 
+                //BTRACE4(SLIPRCV,
+				//printf("SLIP received good packet %p len %d seq %d ack %d   \n",pkt,getLength(pkt),getSeq(pkt),getAck(pkt)) ;
                 addPacketToBuffer(stack,&stack->RCVInputBuffer,state->RCVpkt) ;//将验证过的数据放入RCVInputBuffer中
+				//printf(" SLIPSendPacket =0x%2x  ", *(state->RCVpkt));
                 state->RCVState = SLIPunsynchronised ;
                 state->RCVpkt = null ;
             }

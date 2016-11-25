@@ -16,6 +16,8 @@
 #include "DFUTransportCOM.h"
 #include "DFUEngineBase.h"
 
+#include "../mcu_dfu/com.h"
+
 #define null ((void *)0)
 
 
@@ -55,7 +57,7 @@ void setOnLinkFailUart(void (*fn)(void*),void * param)
     userOnLinkFailParamUart = param ;
 }
 
-uint8 pkt_buff[20] = {0};
+uint8 pkt_buff[1031] = {0};
 void * allocMem ( void * envState , uint32 size ) 
 {
   return &pkt_buff;//返回一个地址，存储接收到的数据
@@ -145,7 +147,44 @@ static const uint8 GetDevice_data[] = {
 
 uint8 sync_data[13] = { 0xc0, 0x40, 0x41, 0x00, 0x7e, 0xda, 0xdc, 0xed,  0xed, 0xa9, 0x7a, 0xc0, '\0' };
 
-static uint16 rcv_count = 0;
+uint16 rcv_count = 0;
+
+void * Thread4(void * a)
+{
+	while (1)
+	{
+		
+		if (LinkEstablishment_Flag == 0x02) //表示BCSP连接成功
+		{
+			//connected = 1;
+			//printf(" 444444444  ");
+
+			Sleep(100);
+			Func_Test();
+			//Do_After_Connect();
+
+            //DoReconfigure(false, false, "abc");
+
+			//DoDownload("abc");
+
+			LinkEstablishment_Flag = 0;
+			exit(0);
+		}
+/*
+	
+		if (getchar() == 's')
+		{
+			//rcv_count = 0;
+			printf(" 444444444  ");
+			DoReconfigure(false, false, "abc");
+			exit(0);
+		}*/	
+	}
+
+	return NULL;
+}
+
+
 void * Thread3(void * a)
 {	
 	
@@ -153,16 +192,18 @@ void * Thread3(void * a)
 
 	while(1)
 	{ 
-		//Packet_Rcv();	
+ 
 		//printf("  3  ");
-			
-		if (rcv_count < 2)
-		{	
-			com_write(sync_data, 12);
-			printf(" ++%d++ ", rcv_count);
-				
+		if (connected != 1)
+		{
+			if (rcv_count < 2)
+			{
+				com_write(sync_data, 12);
+				printf(" ++%d++ ", rcv_count);
+
+			}
 		}
-		
+
        Sleep(300);
 	}
 
@@ -172,8 +213,9 @@ void * Thread2(void * a)
 {
 	while(1)
 	{ 
-		Uart_Rcv();   //这里影响到线程3 ？
+		Uart_Rcv(NULL);   //这里影响到线程3 ？
 		//printf("  2  ");
+
 	}
 
 	return NULL;
@@ -181,22 +223,18 @@ void * Thread2(void * a)
 
 void main_run(void)
 {
-
-	if (set_event == EVENT_BCSP_DATA)
+	while (1)
 	{
-        set_event = 0x00;
-		BCSPImplementation_Test();
+		if (set_event == EVENT_BCSP_DATA)
+		{
+			set_event = 0x00;		
 
-		rcv_count++;
-		if (rcv_count == 100)
-			rcv_count = 4;
-	}
+			rcv_count++;
+			if (rcv_count == 100)
+				rcv_count = 4;
 
-	if (LinkEstablishment_Flag == 0x02) //表示BCSP连接成功
-	{
-		Sleep(100);
-		LinkEstablishment_Flag = 0;
-		Func_Test();
+		
+		}
 	}
 }
 
@@ -210,15 +248,6 @@ void BCSPImplementation_Test()
 
 }
 
-int ThreadFunc()
-{
-    if (!bcspImplementation.mStack->configuration->useLinkEstablishmentProtocol)
-        bcspImplementation.mStack->isUnchoked = true;
-
-    BCSPImplementation_runStack();
-
-    return 0;
-}
 
 void BCSPImplementation_deleteBCSP()
 {
@@ -231,11 +260,12 @@ void BCSPImplementation_deleteBCSP()
     free(bcspImplementation.mStack);
 }
 
+
 void BCSPImplementation_createBCSPStack()
 {
     uint8 c = 0;
 	
-    bcspImplementation.mStack = (BCSPStack * ) calloc(1,sizeof(BCSPStack)) ;
+	bcspImplementation.mStack = (BCSPStack * ) calloc(1,sizeof(BCSPStack)) ;
 	
     initialiseStack(bcspImplementation.mStack) ;
     //BTRACE0(WINERR,"WINERR debug enabled\n") ;
@@ -284,42 +314,13 @@ void wait(uint32 wakeupTime)
 	}
 	
 	//on with the real code...
-	/*
-	switch ( mFile->wait ( timeout , &mRCVBytesAvailable ) )
-	{
 
-	case UARTAbstraction::UART_XMITDONE : //This is the transmit-finished - all we need to do is reset the event
-	mXMITBusy = false ;
-	BTRACE0(USER0,"TX DONE\n") ;
-	break ; //allow xmit to go ahead
-	case UARTAbstraction::UART_RCVDONE: //This is a receive from the uart
-	mRCVBusy = false ;
-	BTRACE0(USER0,"RX DONE\n") ;
-	break ;
-	case UARTAbstraction::CLIENT_TXREQ:
-	BTRACE0(USER0,"TX REQUEST\n") ;
-	break ;//write req - no action necessary
-	case UARTAbstraction::CLIENT_DIEREQ: //the user has requested that we shutdown
-	BTRACE0(USER0,"DIE REQUEST\n") ;
-	break ;
-	case UARTAbstraction::timedOut:
-	BTRACE0(USER0,"WAIT TIMEOUT\n") ;
-	break;
-	case UARTAbstraction::UART_ERROR:
-	onLinkFailUart();
-	BTRACE0(USER0,"UART ERROR\n") ;
-	break;
-	default :
-	BTRACE0(USER0,"BAD WAIT VALUE\n") ;
-	break ;//error!
-	}
-	*/
 }
 
-uint32 ms_clock ()//系统节拍计数（ms）
+uint32 ms_clock (void)//系统节拍计数（ms）
 {
 	volatile uint32 count = GetTickCount() - SYSTEM_TIME;
-  printf("count = %d \n",count);
+  //printf("count = %d \n",count);
   return count;
 }
 
@@ -371,20 +372,40 @@ void uart_next(void)
    if( uart_handle == uart_end )
       uart_handle = uart_buf;
 }
+uint8 Packet_Rcv_Flag = 0x00;
+uint8 uart_get_data[30] = { 0 };
 //处理串口接收到的数据包，0xC0开始，0xC0结束 
-void BCSP_DATA_RCV(void)
+#if 0
+void BCSP_DATA_RCV(void)  //另一种接收payload数据的方法
 {
     //uart_get = uart_handle;
     while( uart_handle != uart_ptr )
-     {
+     { 
+		int i = 0, j = 0, k = 0;
+		Packet_Rdv_Flag = 0;
        if( *uart_handle == 0xc0 )
        {
+		  
          bcspImplementation.mRCVBuffer[bcspImplementation.mRCVBytesAvailable++] = 0xc0;
          uart_next();        
          while( *uart_handle != 0xc0 )
          {
            bcspImplementation.mRCVBuffer[bcspImplementation.mRCVBytesAvailable++] = *uart_handle;                  
-           //printf("0x%2x",*uart_handle);          
+           //printf("0x%2x",*uart_handle); 
+		   j++;
+		  
+		   //校验payload格式： 0x00 0x00 0x0x ,满足条件则赋值给数组
+		   if ((j == 5) && (*uart_handle == 0x00)) k++;
+		   if ((j == 6) && (*uart_handle == 0x00)) k++;
+		   if ((j == 7) && (*uart_handle != 0x00)) k++;
+
+		   if (j > 8 && k == 3)
+		   { 
+			   printf("0x%x  ", *uart_handle);
+			   uart_get_data[i++] = *uart_handle; 
+			   Packet_Rcv_Flag = 1;
+		   }
+
            uart_next();
          }
          bcspImplementation.mRCVBuffer[bcspImplementation.mRCVBytesAvailable++] = 0xc0;
@@ -392,6 +413,29 @@ void BCSP_DATA_RCV(void)
        uart_next();
     }
 }
+#else
+void BCSP_DATA_RCV(void)
+{
+	while (uart_handle != uart_ptr)
+	{
+		if (*uart_handle == 0xc0)
+		{
+			bcspImplementation.mRCVBuffer[bcspImplementation.mRCVBytesAvailable++] = *uart_handle;
+			uart_next();
+			while (*uart_handle != 0xc0)
+			{
+				//printf(" 0x%2x ", *uart_handle);
+				bcspImplementation.mRCVBuffer[bcspImplementation.mRCVBytesAvailable++] = *uart_handle;
+				uart_next();
+			}
+			bcspImplementation.mRCVBuffer[bcspImplementation.mRCVBytesAvailable++] = *uart_handle;
+		}
+        
+		uart_next();		
+	}
+	//uart_get = uart_handle;  //这个添加后，会将0xcc打印出来
+}
+#endif
 
 struct DeviceDescriptor descriptor;
 
@@ -402,38 +446,67 @@ static const uint8 GetDevice_Return[] = {
 , '\0'
 };
 
+uint8 GetStatus_data[] = { 0xc0, 0xd2, 0x8c, 0x00, 0xa1, 0xa1, 0x03,  0x00, 0x00, 0x00, 0x00,
+  0x06, 0x00, 0x60, 0xfe, 0xc0, '\0' };
+
+uint8 GetFunct_data[] = { 0xc0, 0xd2, 0x8c, 0x00, 0xa1, 0xc1, 0x09,  0x00, 0x00, 0x00, 0x00,
+0x06, 0x00, 0x0a, 0xa2, 0xc0,'\0' };
+
 //static const uint8 confRespPacketData[] = {0xde,0xad,0xd0,0xd0} ;
 //struct DeviceDescriptor descriptor_rcv;
 uint8 LinkEstablishment_Flag = 0x00;
 
 
-uint16 BlockNum = 32;
+uint16 BlockNum = 1;
 uint8 * abuff = "123454321";
 uint16 BufferLength = 8;
 
 void Func_Test(void)
 {
+	Result result;
    struct DeviceDescriptor device;
    struct DFUStatus status;
-   struct DFUFunctionalDescriptor descriptor;
+   //struct DFUFunctionalDescriptor descriptor;
    struct InterfaceDescriptor iface;
+   struct DFUFunctionalDescriptor functional;
+   //com_write(GetDevice_data, 18);
+
+     GetInterfaceDFU(&iface);
+  // RPCGetInterfaceDFU(&iface);
+     //Connect(false);
+
+    result = GetDevice(&device);
+    printf("(----device---- %x )\n", device.idProduct);
+	 
+	if (result) result = GetFunct(&functional);
+	printf("(----descriptor---- %x )\n", functional.wDetachTimeout);
    
-     GetDevice(&device);
-	 printf("device = %x ", device.idProduct);
+	if (result) result = GetFunct(&functional);
+	printf("(----descriptor---- %x )\n", functional.wDetachTimeout);
 
-	 //Sleep(100);
+	Sleep(100);
+	if (result) result = Detach(min(functional.wDetachTimeout, detachTimeout));//复位前调用该函数，芯片复位后还是DFU模式
 
-     GetDevice(&device);
-	 printf("device = %x ",device.idProduct);
-     //GetDevice(&device);
-     //GetInterfaceDFU(&iface);
-     
-     //GetStatus(&status);
-     
- 
-    //Reset();
-   //Dnload(BlockNum ,abuff ,BufferLength);
-   //GetFunct(&descriptor);
-    
-   //Detach(200);
+	Sleep(100);
+	if (result) result = Reset(false); //复位芯片
+
+	Sleep(100); 
+	rcv_count = 0;
+	if (result) result = DoConnect(true, false);
+
+	if (result) result = GetDevice(&device);
+	printf("(----device---- %x )\n", device.idProduct);
+
+	if (result) result = GetDevice(&device);
+	printf("(----device---- %x )\n", device.idProduct);
+
+	if (result) result = GetFunct(&functional);
+	printf("(----descriptor---- %x )\n", functional.wDetachTimeout);
+
+	if (result) result = GetFunct(&functional);
+	printf("(----descriptor---- %x )\n", functional.wDetachTimeout);
+
+	//Sleep(200);
+    //Detach(200);
+    //Dnload(BlockNum ,abuff ,BufferLength);
 }

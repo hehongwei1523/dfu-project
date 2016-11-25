@@ -16,7 +16,7 @@ extern bool EnableHidMode(bool enable);
 	// Composite operations
 extern Result DoConnect(bool hintDFU, bool abort );
 extern Result DoDFUIdle(bool clear , bool abort );
-extern Result DoDownloadStatus(struct DFUStatus status);
+extern Result DoDownloadStatus(struct DFUStatus *status);
 
 	// Status checking
 extern bool IsDFUMode(const struct DeviceDescriptor *dev_descriptor, const struct InterfaceDescriptor *if_descriptor);
