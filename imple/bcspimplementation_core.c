@@ -156,14 +156,14 @@ void * Thread4(void * a)
 		
 		if (LinkEstablishment_Flag == 0x02) //表示BCSP连接成功
 		{
-			//connected = 1;
+			connected = 1;
 			//printf(" 444444444  ");
 
 			Sleep(100);
 			Func_Test();
 			//Do_After_Connect();
 
-            //DoReconfigure(false, false, "abc");
+			//DoReconfigure(false, false, "abc");
 
 			//DoDownload("abc");
 
@@ -483,7 +483,7 @@ void Func_Test(void)
    
 	if (result) result = GetFunct(&functional);
 	printf("(----descriptor---- %x )\n", functional.wDetachTimeout);
-
+/*
 	Sleep(100);
 	if (result) result = Detach(min(functional.wDetachTimeout, detachTimeout));//复位前调用该函数，芯片复位后还是DFU模式
 
@@ -493,7 +493,7 @@ void Func_Test(void)
 	Sleep(100); 
 	rcv_count = 0;
 	if (result) result = DoConnect(true, false);
-
+*/	
 	if (result) result = GetDevice(&device);
 	printf("(----device---- %x )\n", device.idProduct);
 

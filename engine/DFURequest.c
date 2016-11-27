@@ -33,9 +33,10 @@ Result Connect(bool hintDFU)
 	if (!connected)
 	{
 		printf("##########Connect############ \n");
+		//sendpdu_flag = 1;
         Result result = RPCConnect(hintDFU);
         if (!result) return result;
-
+		//sendpdu_flag = 0;
         connected = true;
         result = RPCGetInterfaceDFU(&dfuInterfaceDescriptor);
         if (!result) return result;
@@ -241,7 +242,9 @@ Result GetDevice(struct DeviceDescriptor *descriptor)
 {
 	Result result = PreRPC();
 	printf("##########GetDevice############ \n");
+	sendpdu_flag = 3;
 	if (result) result = RPCGetDevice(descriptor);
+	sendpdu_flag = 0;
 	return PostRPC(result);
 }
 
@@ -249,7 +252,9 @@ Result GetFunct(struct DFUFunctionalDescriptor *descriptor)
 {
 	Result result = PreRPC();
 	printf("##########GetFunct############ \n");
+	sendpdu_flag = 3;
 	if (result) result = RPCGetFunct(descriptor);
+	sendpdu_flag = 0;
 	return PostRPC(result);
 }
 
@@ -302,7 +307,9 @@ Result GetStatus(struct DFUStatus *status)
 {
 	Result result = PreRPC();
 	printf("##########GetStatus############ \n");
+	sendpdu_flag = 3;
 	if (result) result = RPCGetStatus(status);
+	sendpdu_flag = 0;
 	return PostRPC(result);
 }
 

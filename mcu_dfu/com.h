@@ -23,7 +23,7 @@ int com_put(char data);
 /*
 * Read data (1 byte)
 */
-int com_get();
+unsigned char com_get();
 
 /*
 * Read message (ended [-+])

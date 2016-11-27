@@ -38,7 +38,7 @@ static const int comParity = EVENPARITY;
 
 int BCSP_init()
 {
-	hCOMHnd = CreateFile(L"\\\\.\\COM6", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+	hCOMHnd = CreateFile(L"\\\\.\\COM4", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 	// Start a BCSP transport
 	if (hCOMHnd == INVALID_HANDLE_VALUE)
 	{
@@ -93,7 +93,7 @@ int com_init(char *s)
 
 	//sprintf(sPortName, "\\\\.\\%s", s);
     //hCOMHnd = CreateFile(OpenComName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);//FILE_ATTRIBUTE_NORMAL
-	hCOMHnd = CreateFile(L"\\\\.\\COM6", GENERIC_READ | GENERIC_WRITE,0, NULL, OPEN_EXISTING, 0, NULL);
+	hCOMHnd = CreateFile(L"\\\\.\\COM4", GENERIC_READ | GENERIC_WRITE,0, NULL, OPEN_EXISTING, 0, NULL);
 
 	if (hCOMHnd == INVALID_HANDLE_VALUE)
 	{
@@ -245,13 +245,89 @@ int com_put(char data)
 }
 
 
-int com_get()
+unsigned char com_get()
 {
 	BOOL  bRes;
-	char  data;
+	unsigned char data;// = 0xcc;
 	DWORD dwRead;
 
+	BOOL bResult;
+	DWORD Event = 0;
+	COMSTAT ComStat;        //串口状态 
+	DWORD CommEvent = 0xff;
+
+#if 1
 	bRes = ReadFile(hCOMHnd, &data, 1, &dwRead, NULL);
+#else
+	//获取串口事件掩码 
+	GetCommMask(hCOMHnd, &CommEvent);
+	printf("CommEvent = %d  ", CommEvent);
+	if (CommEvent & EV_RXCHAR) //收到一个字符 
+	{
+		bRes = ReadFile(hCOMHnd, &data, 1, &dwRead, NULL);
+		printf("data = 0x%2x ", data);	
+	}
+#endif
+
+	return (unsigned char)data;
+	/*
+	bResult = WaitCommEvent(hCOMHnd, &Event, FILE_FLAG_OVERLAPPED);
+
+	if (!bResult)
+	{
+		//如果WaitCommEvent()返回FALSE,调用GetLastError()判断原因 
+		switch (dwError = GetLastError())
+		{
+			case ERROR_IO_PENDING:      //重叠操作正在后台进行 
+			{
+				//如果串口这时无字符,这是正常返回值,继续 
+				break;
+			}
+			case 87:
+			{
+				//在WIN NT下这是一个可能结果，但我没有找到 
+				//它出现的原因,我什么也不做,继续 
+				break;
+			}
+			default:
+			{
+				//所有其它错误代码均显示串口出错,显示出错信息 
+				printf("等待串口事件");
+
+			}
+		}
+	}
+	else
+	{
+		//如果WaitCommEvent()返回true,检查输入缓冲区是否确实 
+		//有字节可读,若没有,则继续下一循环 
+		//ClearCommError()将更新串口状态结构并清除所有串口硬件错误 
+		ClearCommError(hCOMHnd, &dwError, &ComStat);
+		if (ComStat.cbInQue == 0)   //输入缓冲队列长为0,无字符 
+			;//continue;
+	}
+	
+	switch (Event)
+	{
+		case 0: //关闭串口事件,优先处理 
+		{
+			printf("关闭串口");
+		}
+		case 1: //读串口事件 
+		{
+			//获取串口事件掩码 
+			GetCommMask(hCOMHnd, &CommEvent);
+			if (CommEvent & EV_RXCHAR) //收到一个字符 
+			{
+				//ReceiveChar(Port);//读入一个字符 
+				bRes = ReadFile(hCOMHnd, &data, 1, &dwRead, NULL);
+				printf("data = 0x%2x ", data);
+			}
+			break;
+		}
+     }
+	 */
+	//
 /*	
 	printf("dwRead = 0x%2x ",dwRead);
 	if (!bRes)

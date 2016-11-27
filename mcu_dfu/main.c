@@ -19,9 +19,12 @@ void Uart_Reset(void)
 
 void * Uart_Rcv(void* g)
 {
+
 	//uart_get = uart_handle;
 	if (uart_ptr != uart_end)
 	{
+		//uint8 data = com_get();
+		//if (data == 0xcc) return;
 		*uart_ptr++ = com_get();  //没数据输入，该函数一直读到0xcc（未定义的意思？）
 		//printf("0x%x ", *(uart_ptr-1));
 
@@ -34,7 +37,7 @@ void * Uart_Rcv(void* g)
 	}
 
 
-	if ((uart_data > 1) && (*(uart_ptr - 2) != 0xc0))//接收到两个0xC0，并且前一个不是0xC0
+	if ((uart_data > 1) )//&& (*(uart_ptr - 2) != 0xc0))//接收到两个0xC0，并且前一个不是0xC0
 	{
 		//printf(" uart_data =%d \n ", uart_data);
 		uart_data = 0;
@@ -51,24 +54,20 @@ void * Uart_Rcv(void* g)
 			{
 				//BCSPshutdownStack(bcspImplementation.mStack);
 				response_packet++;
-				if (sendpdu_flag != 0)
-					;// return 0;  //没效果，还是会再发一次
+				//if (sendpdu_flag == 3)
+					if (Packet_Rcv_Flag == 0)
+					{
+						printf("response packet \n");
+						//return 0;  //没效果，还是会再发一次。并且会导致接收数据出错
+
+					}
 				//printf("response packet \n");
 				//这里退出会导致之后连接不上
-				if (response_packet < 2)
-				{
-
-				}
-				else
-				{
-					response_packet = 0;
-					//return;
-					
-				}
 			}
 
 			//printf("uart_data packet start \n");
 			BCSPImplementation_Test();//不是回复数据包
+									  //根据调试的情况看来，重发命令不是因为这里导致的
 			//printf("uart_data packet end  \n");
 		}
 		else

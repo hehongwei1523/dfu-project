@@ -56,6 +56,8 @@ void Packet_Rcv_download(void)
 	while (uart_get != uart_ptr)
 	{
 		int j = 0, k = 0;
+		//printf(" download \n");
+		//Sleep(5);
 		if (*uart_get == 0xc0)
 		{
 			uart_get_next();//跳过0xc0
@@ -86,7 +88,8 @@ void Packet_Rcv(void) //这部分内容处理得不是很好
 	while (uart_get != uart_ptr)
 	{
 		int i = 0, j = 0, k = 0;
-
+		printf("  time  \n");
+		Sleep(5);
 		if (*uart_get == 0xc0)
 		{
 			uart_get_next();//跳过0xc0
@@ -94,22 +97,26 @@ void Packet_Rcv(void) //这部分内容处理得不是很好
 			while (*uart_get != 0xc0)
 			{
 				j++;
+				
 				//bcspImplementation.mRCVBuffer[bcspImplementation.mRCVBytesAvailable++] = *uart_get;
 				//校验payload格式： 0x00 0x00 0x0x 0x00,满足条件则赋值给数组
 				if ((j == 5) && (*uart_get == 0x00)) k++;
 				if ((j == 6) && (*uart_get == 0x00)) k++;
 				if ((j == 7) && (*uart_get != 0x00)) k++;
 				if ((j == 8) && (*uart_get == 0x00)) k++;
-
+				if (k == 4)
+					printf("(");
 				if ( (j > 8) && (k == 4) )
 				{
 					Packet_Rcv_Flag =1;
-					printf("0x%x  ", *uart_get);  //调试打印 :不打印时，会接收不到数据
 					uart_get_data[i++] = *uart_get; 			
 				}
+				printf("0x%x  ", *uart_get);  //调试打印 :不打印时，会接收不到数据
+				if(k==4)
+                   printf(")");
+				//if (j > 25) return;
 				uart_get_next();
 			}
-
 		}
 		uart_get_next();
 		//bcspImplementation.mRCVBuffer[bcspImplementation.mRCVBytesAvailable++] = 0xc0;
@@ -168,7 +175,7 @@ Result ControlRequest(const struct Setup setup, void *buffer, uint16 bufferLengt
     sendpdu( PayLoad_Buff ,requestLength );
 
     if( (sendpdu_flag == 1) || (sendpdu_flag == 2) ) return success; //部分函数不需要接收数据，直接退出接收部分
-	//Sleep(5);//发送完命令后，加一点延时，等handle处理完后，再接收payload: 测试表明没用
+	//Sleep(100);//发送完命令后，加一点延时，等handle处理完后，再接收payload: 测试表明没用
 
 /*****************************************/
     //串口接收处理过程

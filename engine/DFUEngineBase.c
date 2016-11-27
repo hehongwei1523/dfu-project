@@ -196,6 +196,7 @@ Result DoDownload(DFUFile file) //ÉÕÂ¼¹ý³Ì
 
 	int file_length = sizeof(download_file);
 	Dnload(BlockNum, download_file, file_length);// BufferLength);
+	Sleep(100);
 	/*
 	file->SeekToBegin();
 	uint16 blockNum = 0;
