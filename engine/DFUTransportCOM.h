@@ -1,6 +1,6 @@
 //#include "DFURequest.h"
 
-#define Max_Buff_Size 1031
+#define Max_Buff_Size 1050
 extern uint8 Send_Buff[];
 
 //typedef enum ResultCode Result;

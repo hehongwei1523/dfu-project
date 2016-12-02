@@ -115,4 +115,7 @@ extern uint16 BlockNum;
 extern uint8 * abuff;
 extern uint16 BufferLength;
 
+extern uint8* download_file_buf;  //要获取的字符串  
+extern uint16 download_file_len;    //获取的长度
+
 #endif

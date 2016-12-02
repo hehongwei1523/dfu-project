@@ -34,7 +34,7 @@ static  char    bytebuffer_h_id[]
 #include "common/types.h"
 
 #ifndef BYTE_BUFFERSIZE
-#define BYTE_BUFFERSIZE 32 // this must be a power of 2
+#define BYTE_BUFFERSIZE 128 // this must be a power of 2
 #endif
 #define BYTE_BUFFERSIZE_MASK (BYTE_BUFFERSIZE-1)
 

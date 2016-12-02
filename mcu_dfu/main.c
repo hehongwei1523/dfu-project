@@ -17,19 +17,28 @@ void Uart_Reset(void)
 	uart_ptr = uart_buf;
 }
 
+void Clearn_Answer_buff(void)
+{
+	int i = 0;
+	for (i = 0; i < 8; i++)
+	{ 
+		//printf("[%d]=0x%x ",i, bcspImplementation.mRCVBuffer[i]);
+		bcspImplementation.mRCVBuffer[i] = 0x00;
+	}
+}
+
 void * Uart_Rcv(void* g)
 {
-
-	//uart_get = uart_handle;
 	if (uart_ptr != uart_end)
 	{
-		//uint8 data = com_get();
-		//if (data == 0xcc) return;
-		*uart_ptr++ = com_get();  //没数据输入，该函数一直读到0xcc（未定义的意思？）
+		*uart_ptr++ = com_get();  //没数据输入，该函数一直读到0xcc
 		//printf("0x%x ", *(uart_ptr-1));
 
-		if (*(uart_ptr - 1) == 0xc0)  //放到这里判断，减少时间的浪费 2016-11-18
+		if ( (*(uart_ptr - 1) == 0xc0) )//&& (*(uart_ptr-2) != 0xc0) ) //放到这里判断，减少时间的浪费 2016-11-18
+		{
 			uart_data++;
+			//printf(" uart_data =%d \n ", uart_data);
+		}
 	}
 	else
 	{
@@ -37,11 +46,25 @@ void * Uart_Rcv(void* g)
 	}
 
 
-	if ((uart_data > 1) )//&& (*(uart_ptr - 2) != 0xc0))//接收到两个0xC0，并且前一个不是0xC0
+	if ((uart_data == 2) )//&& (*(uart_ptr - 2) != 0xc0))//接收到两个0xC0，并且前一个不是0xC0 
 	{
 		//printf(" uart_data =%d \n ", uart_data);
 		uart_data = 0;
+		
 		BCSP_DATA_RCV();
+		/*
+		  //从发送的数据包进行处理
+		//判断是否是应答数据包
+		if (sendpdu_flag == 4)
+		if ((bcspImplementation.mRCVBuffer[0] == 0xc0) && (bcspImplementation.mRCVBuffer[1] != 0x00) &&
+			(bcspImplementation.mRCVBuffer[2] == 0x00) && (bcspImplementation.mRCVBuffer[3] == 0x00))
+		{
+			printf(" response ");
+			//uart_handle = uart_ptr;
+			Clearn_Answer_buff();
+			return;
+		}
+	    */
 
 		set_event = EVENT_BCSP_DATA;
 
@@ -49,25 +72,12 @@ void * Uart_Rcv(void* g)
 		但接收到芯片应答数据包后，会自动重发一次，并且payload填充数据0xdd  2016-11-21 */
 
 		if (connected == 1)  //BCSP建立连接后
-		{ 
-			if ((bcspImplementation.mRCVBuffer[2] == 0x00) && (bcspImplementation.mRCVBuffer[3] == 0x00))
-			{
-				//BCSPshutdownStack(bcspImplementation.mStack);
-				response_packet++;
-				//if (sendpdu_flag == 3)
-					if (Packet_Rcv_Flag == 0)
-					{
-						printf("response packet \n");
-						//return 0;  //没效果，还是会再发一次。并且会导致接收数据出错
+		{
 
-					}
-				//printf("response packet \n");
-				//这里退出会导致之后连接不上
-			}
+           BCSPImplementation_Test();//不是回复数据包
 
-			//printf("uart_data packet start \n");
-			BCSPImplementation_Test();//不是回复数据包
-									  //根据调试的情况看来，重发命令不是因为这里导致的
+			//printf("uart_data packet start \n");	
+
 			//printf("uart_data packet end  \n");
 		}
 		else

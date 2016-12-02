@@ -102,12 +102,28 @@ static void RPC_Func(uint8 *buff,int size)
     addPacketToBuffer(bcspImplementation.mStack,&bcspImplementation.mStack->SEQInput, pkt);//MUXUnreliableInput //PacketDelivererInput  //RCVInputBuffer,pkt);发送不出 
 }
 
+static void RPC_Func_res(uint8 *buff, int size)
+{
+	//disposePacketBuffer(bcspImplementation.mStack, &bcspImplementation.mStack->SEQInput);
+	//BCSPshutdownStack(bcspImplementation.mStack);
+	
+	Packet * pkt;
+	pkt = SYNCBLKgetPacketFromPool(bcspImplementation.mStack, modeRCV, 0);//
+	//pkt->data = NULL;
+	setLength(pkt, 0);
+	setProtocolId(pkt, 0x0c);//DFU ID
+	setProtocolType(pkt, BCSPChannelUnreliable);//BCSPChannelUnreliable); //可靠数据包
+	addPacketToBuffer(bcspImplementation.mStack, &bcspImplementation.mStack->SEQInput, pkt);//MUXUnreliableInput //PacketDelivererInput  //RCVInputBuffer,pkt);发送不出 
+    
+}
+
+uint8 ff_flag = 0;
 void sendpdu ( uint8 *buff, int size )
 {
    
 	uint8 *send_buff;
     //printf("size = %d ",size);
-    send_buff = (uint8 *)malloc(size * sizeof(uint8)); //不要用这种方法传递数据  2016-11-25 
+    send_buff = (uint8 *)malloc(size * sizeof(uint8));
     memcpy(send_buff,buff,size * sizeof(uint8 ));
 #if 0
 {
@@ -119,11 +135,12 @@ void sendpdu ( uint8 *buff, int size )
     RPC_Func(send_buff,size);
 	//printf("transport packet start \n");
 	/*下载时，文件的buff比较大，需要执行几次runStack函数，因此特殊处理 2016-11-25 */
+ 
 	if (sendpdu_flag == 2)
 		sendpdu_download();
 	else
 	    BCSPImplementation_runStack();
-	//BCSPImplementation_Test();
+
 	//printf("transport packet end \n");
     free(send_buff); //释放内存空间后，payload的数据为0xdd
 }

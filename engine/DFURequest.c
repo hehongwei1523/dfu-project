@@ -90,7 +90,7 @@ Result RPCDnload(uint16 blockNum, void *buffer, uint16 bufferLength)
 Result Dnload(uint16 blockNum, const void *buffer, uint16 bufferLength)
 {
 	Result result = PreRPC();
-	printf("##########Dnload############ \n");
+	printf("\n##########Dnload############ \n");
 	sendpdu_flag = 2;
 	if (result) result = RPCDnload(blockNum, (uint8 *)buffer, bufferLength);
 	sendpdu_flag = 0;
@@ -269,7 +269,7 @@ Result PreDnload(DFUFile file)
 // Conversion of DFU status codes to DFUEngine result codes
 Result MapDFUStatus(uint8 status, uint8 stringIndex)
 {
- 
+	printf("MapDFUStatus  \n");
 	// Return the result
 	return success;
 }
@@ -307,9 +307,9 @@ Result GetStatus(struct DFUStatus *status)
 {
 	Result result = PreRPC();
 	printf("##########GetStatus############ \n");
-	sendpdu_flag = 3;
+	//sendpdu_flag = 3;
 	if (result) result = RPCGetStatus(status);
-	sendpdu_flag = 0;
+	//sendpdu_flag = 0;
 	return PostRPC(result);
 }
 

@@ -71,7 +71,7 @@ void BCSPshutdownStack(BCSPStack * stack)
 			readByteFromByteBuffer(stack,&stack->SLIPByteInput) ;
 	 
 
-	//scheduler(stack,0) ;
+	scheduler(stack,0) ;
 	
 	//now return all packets to the packet pool, calling callbacks as we go...
 	//NB - once we start disposing of packets, pool-accounting is 

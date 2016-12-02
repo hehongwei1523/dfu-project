@@ -156,11 +156,13 @@ Result RPCConnect(bool hintDFU)  //与芯片建立BCSP联系
 {
     Result result;
 //free(bcspImplementation.mStack);
+	//BCSPshutdownStack(bcspImplementation.mStack);
+	BCSPImplementation_deleteBCSP();
 	/*每次连接都初始化BCSP参数*/
 	BCSPImplementation_Environment();
 	BCSPTransport();
 	
-	//BCSPshutdownStack(bcspImplementation.mStack);
+	
 
 	rcv_count = 1; 
 	LinkEstablishment_Flag = 0x00;

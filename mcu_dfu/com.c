@@ -38,7 +38,7 @@ static const int comParity = EVENPARITY;
 
 int BCSP_init()
 {
-	hCOMHnd = CreateFile(L"\\\\.\\COM4", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+	hCOMHnd = CreateFile(L"\\\\.\\COM6", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 	// Start a BCSP transport
 	if (hCOMHnd == INVALID_HANDLE_VALUE)
 	{
@@ -93,7 +93,7 @@ int com_init(char *s)
 
 	//sprintf(sPortName, "\\\\.\\%s", s);
     //hCOMHnd = CreateFile(OpenComName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);//FILE_ATTRIBUTE_NORMAL
-	hCOMHnd = CreateFile(L"\\\\.\\COM4", GENERIC_READ | GENERIC_WRITE,0, NULL, OPEN_EXISTING, 0, NULL);
+	hCOMHnd = CreateFile(L"\\\\.\\COM6", GENERIC_READ | GENERIC_WRITE,0, NULL, OPEN_EXISTING, 0, NULL);
 
 	if (hCOMHnd == INVALID_HANDLE_VALUE)
 	{
@@ -105,11 +105,11 @@ int com_init(char *s)
 #endif
 		return(-1);
 	}
-
+	
 	//设置读超时
 	COMMTIMEOUTS timeouts; //add 2016-11-16
 	GetCommTimeouts(hCOMHnd, &timeouts);
-	timeouts.ReadIntervalTimeout = 0;
+	timeouts.ReadIntervalTimeout =  0;
 	timeouts.ReadTotalTimeoutMultiplier = 10;
 	timeouts.ReadTotalTimeoutConstant = 1;// 500;// 60000;  //2016-11-23 时间缩小,不能为0
 	timeouts.WriteTotalTimeoutMultiplier = 0;
@@ -357,7 +357,7 @@ unsigned char com_get()
 		printf("0x%x ",data[i]);
 	}
 */
-	return (int)data;
+
 }
 
 

@@ -55,9 +55,8 @@ void Packet_Rcv_download(void)
 	uart_get = uart_handle; 
 	while (uart_get != uart_ptr)
 	{
-		int j = 0, k = 0;
-		//printf(" download \n");
-		//Sleep(5);
+		int j = 0, k = 0,z=0;
+
 		if (*uart_get == 0xc0)
 		{
 			uart_get_next();//跳过0xc0
@@ -65,40 +64,49 @@ void Packet_Rcv_download(void)
 			{
 				j++;
 				//校验payload格式： 0x00 0x00 0x00 0x00,满足条件
-				if ( (j>4) && (j<9) && (*uart_get == 0x00)) k++;
+				//if ((j == 5) && ((*uart_get == 0x00)|| (*uart_get == 0x02))) k++;
+				if (j == 5) k++;
+				if ((j == 6) && (*uart_get == 0x00)) k++;
+				if ((j == 7) && (*uart_get == 0x00)) k++;
+				if ((j == 8) && (*uart_get == 0x00)) k++;
+
 				if ( k == 4 )
+				{			
+					printf("("); 
+				}
+				printf("0x%x  ", *uart_get);  //调试打印 :不打印时，会接收不到数据
+
+				if (k == 4)
 				{
 					Packet_Rcv_Flag = 1;
-					printf("0x%x  ", *uart_get);  //调试打印 :不打印时，会接收不到数据
+					printf(")");
+					return;
 				}
+
 				uart_get_next();
 			}
 		}
+		if (Packet_Rcv_Flag == 1) return;
 		uart_get_next();
 	}
 }
-//uint8 Packet_Rcv_Flag = 0x00;
-//uint8 uart_get_data[30] = { 0 };
 
 void Packet_Rcv(void) //这部分内容处理得不是很好
 {
-	Packet_Rcv_Flag = 0x00;
 
 	uart_get = uart_handle;//uart_ptr;// 
 	while (uart_get != uart_ptr)
 	{
 		int i = 0, j = 0, k = 0;
-		printf("  time  \n");
+		//printf("  time  \n");
 		Sleep(5);
 		if (*uart_get == 0xc0)
 		{
 			uart_get_next();//跳过0xc0
-			//bcspImplementation.mRCVBuffer[bcspImplementation.mRCVBytesAvailable++] = 0xc0;
 			while (*uart_get != 0xc0)
 			{
 				j++;
 				
-				//bcspImplementation.mRCVBuffer[bcspImplementation.mRCVBytesAvailable++] = *uart_get;
 				//校验payload格式： 0x00 0x00 0x0x 0x00,满足条件则赋值给数组
 				if ((j == 5) && (*uart_get == 0x00)) k++;
 				if ((j == 6) && (*uart_get == 0x00)) k++;
@@ -109,18 +117,17 @@ void Packet_Rcv(void) //这部分内容处理得不是很好
 				if ( (j > 8) && (k == 4) )
 				{
 					Packet_Rcv_Flag =1;
-					uart_get_data[i++] = *uart_get; 			
+					uart_get_data[i++] = *uart_get; 
+					//printf("flag");
 				}
 				printf("0x%x  ", *uart_get);  //调试打印 :不打印时，会接收不到数据
 				if(k==4)
                    printf(")");
-				//if (j > 25) return;
 				uart_get_next();
 			}
 		}
-		uart_get_next();
-		//bcspImplementation.mRCVBuffer[bcspImplementation.mRCVBytesAvailable++] = 0xc0;
-
+		if (Packet_Rcv_Flag == 1) return;
+		uart_get_next();	
 	}
 }
 
@@ -128,17 +135,27 @@ void sendpdu_download(void)
 {
 	Packet_Rcv_Flag = 0x00; //接收函数之前必须清理标志位，否则导致判断直接跳过，接收不到数据
 	uint32 time_begin = ms_clock();
+	
+	int i = 9;
+	while (i--) //发收分离
+	{
+       BCSPImplementation_runStack();
+	   if (sendpdu_flag == 4)
+		   break;
+	}
 
 	while (Packet_Rcv_Flag != 1)
-	{	
+	{
 		Packet_Rcv_download();//等待芯片返回的应答payload，否则一直循环
+
 		if ((ms_clock() - time_begin) > 5000) //接收超时则跳出循环,时间稍长些 2016-11-25
 		{
 			printf("download time out \n");
 			break;
 		}
-		BCSPImplementation_runStack();
 	}
+	sendpdu_flag = 2;
+	printf("download \n");
 }
 
 // Generic control requests
@@ -170,7 +187,6 @@ Result ControlRequest(const struct Setup setup, void *buffer, uint16 bufferLengt
         memcpy((void*)PayLoad_Buff, &setup, sizeof(setup));
 	}
       
-    //BCSPImplementation_Test(); 
 
     sendpdu( PayLoad_Buff ,requestLength );
 

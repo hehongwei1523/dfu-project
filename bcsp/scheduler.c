@@ -139,7 +139,7 @@ uint32 scheduler(BCSPStack * stack,uint32 timeNow)
 			if (!(stack->waitMask & id))
 			{
 				//setup the return context
-				if (!setjmp(stack->schedulerState))
+				if (!setjmp(stack->schedulerState)) //longjmp 跳回这里继续执行后续函数。
 				{
 					//call the current task 
 					stack->currentTaskId = id ;
@@ -173,6 +173,7 @@ void immediateBlock(BCSPStack * stack,uint16 * waitMask)
 	stack->waitMask |= stack->currentTaskId ;
 
 	//now do longjmp
+	//printf("currentTaskId= %d \n", stack->currentTaskId);
 	longjmp(stack->schedulerState,stack->currentTaskId) ;
 }
 
