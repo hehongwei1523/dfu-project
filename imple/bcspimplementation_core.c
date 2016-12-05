@@ -160,12 +160,12 @@ uint16 rcv_count = 0;
 
 uint8* download_file_buf;  //要获取的字符串  
 uint16 download_file_len;    //获取的长度 
-const char * download_file_path = "c:\\dfu\\no-key\\combined4.dfu"; /*路径要用双斜杠\\ */ //" //"c:\\dfu\\key\\psr_signed.dfu";
+const char * download_file_path = "c:\\dfu\\no-key\\combined5.dfu"; /*路径要用双斜杠\\ */ //" //"c:\\dfu\\key\\psr_signed.dfu";
 
 void File_Handle(void)
 {
 	//创建一个文件指针  
-	FILE* download_file = (FILE*)fopen(download_file_path, "r");
+	FILE* download_file = (FILE*)fopen(download_file_path, "rb"); //以二进制格式读取，避免fread读取长度变少
 
 	if (download_file !=NULL) {
 
@@ -473,6 +473,10 @@ void BCSPImplementation_runStack(void)
 					(bcspImplementation.mXMITBuffer[8] == 0xdd) && (bcspImplementation.mXMITBuffer[9] == 0xdd))
 					return;
 
+				//如果数组数据为0xcd(内存未初始化)，则退出，不进行发送 2016-12-5
+				if ((bcspImplementation.mXMITBuffer[6] == 0xcd) && (bcspImplementation.mXMITBuffer[7] == 0xcd) &&
+					(bcspImplementation.mXMITBuffer[8] == 0xcd) && (bcspImplementation.mXMITBuffer[9] == 0xcd))
+					return;
 				/*比较两次发送的数据是否一样 //只适用于少于128字节的数据包  2016-12-1 
 				if( sendpdu_flag == 2) 
 				{
@@ -535,13 +539,13 @@ void BCSPImplementation_runStack(void)
 					BCSPStack * stack = bcspImplementation.mStack;
 					
 					scheduler(stack, 0);
-					
+/*					//屏蔽，清除了SEQInput和MUXunreliableinput会导致getStatus指令发不出去  2016-12-5
 					disposePacket(stack, stack->SLIPInputPacket);
 
 					disposePacketBuffer(stack, &stack->MUXUnreliableInput);
 					disposePacketBuffer(stack, &stack->MUXUnreliableInput);
 					disposePacketBuffer(stack, &stack->SEQInput);
-					
+*/					
 					//now do the receive side ...
 					disposePacketBuffer(stack, &stack->PacketDelivererInput);
 					disposePacketBuffer(stack, &stack->LinkEstablishmentInput);

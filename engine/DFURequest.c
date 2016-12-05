@@ -307,9 +307,9 @@ Result GetStatus(struct DFUStatus *status)
 {
 	Result result = PreRPC();
 	printf("##########GetStatus############ \n");
-	//sendpdu_flag = 3;
+	sendpdu_flag = 3;
 	if (result) result = RPCGetStatus(status);
-	//sendpdu_flag = 0;
+	sendpdu_flag = 0;
 	return PostRPC(result);
 }
 
