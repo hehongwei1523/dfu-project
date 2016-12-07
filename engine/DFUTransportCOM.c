@@ -16,7 +16,6 @@ typedef void *HANDLE;
 
 uint8 PayLoad_Buff[Max_Buff_Size] = { 0 };
 
-//extern void sendpdu ( int Packet_size );
 // Reply header
 struct Status
 {
@@ -31,11 +30,9 @@ void Test_Printf_Send_Buff(void)
   for( i=0; i<0x15; i++)
 
    printf("PayLoad_Buff[%d] = %x \n",i,PayLoad_Buff[i]);
-  
 }
 
 uint8 * uart_get = uart_buf;
-//uint8 uart_get_data[30] = {0};
 
 void uart_get_next(void)
 {
@@ -93,8 +90,7 @@ void Packet_Rcv_download(void)
 
 void Packet_Rcv(void) //这部分内容处理得不是很好
 {
-
-	uart_get = uart_handle;//uart_ptr;// 
+	uart_get = uart_handle;
 	while (uart_get != uart_ptr)
 	{
 		int i = 0, j = 0, k = 0;
@@ -112,17 +108,18 @@ void Packet_Rcv(void) //这部分内容处理得不是很好
 				if ((j == 6) && (*uart_get == 0x00)) k++;
 				if ((j == 7) && (*uart_get != 0x00)) k++;
 				if ((j == 8) && (*uart_get == 0x00)) k++;
-				if (k == 4)
-					printf("(");
+
+				//if (k == 4) printf("(");
+					
 				if ( (j > 8) && (k == 4) )
 				{
 					Packet_Rcv_Flag =1;
 					uart_get_data[i++] = *uart_get; 
 					//printf("flag");
 				}
-				printf("0x%x  ", *uart_get);  //调试打印 :不打印时，会接收不到数据
-				if(k==4)
-                   printf(")");
+				//printf("0x%x  ", *uart_get);  //调试打印 :不打印时，会接收不到数据
+				//if(k==4) printf(")");
+				if (j > 30) break;
 				uart_get_next();
 			}
 		}
@@ -143,7 +140,8 @@ void sendpdu_download(void)
 	   if (sendpdu_flag == 4)
 		   break;
 	}
-
+	Sleep(60);   //不接收download的应答，延迟一段时间，等待uart数据的接收
+#if 0
 	while (Packet_Rcv_Flag != 1)
 	{
 		Packet_Rcv_download();//等待芯片返回的应答payload，否则一直循环
@@ -154,8 +152,9 @@ void sendpdu_download(void)
 			break;
 		}
 	}
+#endif
 	sendpdu_flag = 2;
-	printf("download \n");
+	//printf("download \n");
 }
 
 // Generic control requests
@@ -187,11 +186,9 @@ Result ControlRequest(const struct Setup setup, void *buffer, uint16 bufferLengt
         memcpy((void*)PayLoad_Buff, &setup, sizeof(setup));
 	}
       
-
     sendpdu( PayLoad_Buff ,requestLength );
 
     if( (sendpdu_flag == 1) || (sendpdu_flag == 2) ) return success; //部分函数不需要接收数据，直接退出接收部分
-	//Sleep(100);//发送完命令后，加一点延时，等handle处理完后，再接收payload: 测试表明没用
 
 /*****************************************/
     //串口接收处理过程

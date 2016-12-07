@@ -90,7 +90,7 @@ Result RPCDnload(uint16 blockNum, void *buffer, uint16 bufferLength)
 Result Dnload(uint16 blockNum, const void *buffer, uint16 bufferLength)
 {
 	Result result = PreRPC();
-	printf("\n##########Dnload############ \n");
+	//printf("\n##########Dnload############ \n");
 	sendpdu_flag = 2;
 	if (result) result = RPCDnload(blockNum, (uint8 *)buffer, bufferLength);
 	sendpdu_flag = 0;

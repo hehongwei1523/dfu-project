@@ -4,11 +4,10 @@
 
 //#include "com.h"
     
-
-uint8 uart_buf[250];
+#define uart_buf_size 128
+uint8 uart_buf[uart_buf_size];
 uint8 * uart_ptr = uart_buf;
-uint8 * uart_end = uart_buf + 250;
-uint8 index = 0 ;
+uint8 * uart_end = uart_buf + uart_buf_size;
 uint8 uart_data;
 
 

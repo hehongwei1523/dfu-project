@@ -51,7 +51,7 @@ void bailOut(BCSPStack * stack,SLIPState * state)
 		state->RCVpkt = null ;
 	}
 	state->RCVState = SLIPunsynchronised ;
-          printf("SLIPunsynchronised");
+          //printf("SLIPunsynchronised");
 }
 
 /****************************************************************************

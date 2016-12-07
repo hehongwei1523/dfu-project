@@ -56,7 +56,7 @@ typedef struct BCSPImplementation
     uint32 mXMITBytesAvailable ;
     uint32 mRCVBytesAvailable ;
     uint8 mXMITBuffer[BYTE_BUFFERSIZE] ;
-    uint8 mRCVBuffer[BYTE_BUFFERSIZE] ;
+	uint8 mRCVBuffer[BYTE_BUFFERSIZE] ;
     uint32 mXMITbytesWritten ;
     uint32 mLastXmitTime ;
 
@@ -116,6 +116,7 @@ extern uint8 * abuff;
 extern uint16 BufferLength;
 
 extern uint8* download_file_buf;  //要获取的字符串  
-extern uint16 download_file_len;    //获取的长度
+extern long download_file_len;    //获取的长度
 
+//extern CRITICAL_SECTION g_cs;
 #endif

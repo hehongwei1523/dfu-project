@@ -162,8 +162,6 @@ Result RPCConnect(bool hintDFU)  //与芯片建立BCSP联系
 	BCSPImplementation_Environment();
 	BCSPTransport();
 	
-	
-
 	rcv_count = 1; 
 	LinkEstablishment_Flag = 0x00;
 	uint32 time_begin = ms_clock();

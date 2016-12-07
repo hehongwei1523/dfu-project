@@ -257,10 +257,7 @@ Result DoDownload(DFUFile file) //烧录过程
 			result = Dnload(0, &download_file, 1023);// sizeof(download_file) / sizeof(uint8));//   BufferLength);
 		if (i == 1)
 		{
-			//scheduler(bcspImplementation.mStack, 0);
-			//com_write(download_file3, sizeof(download_file3) / sizeof(uint8));
 			Sleep(100);//延时要足够长  2016-11-30
-			//BCSPImplementation_runStack();
 			result = Dnload(1, &download_file1, 221);// sizeof(download_file1) / sizeof(uint8));
 			printf("second dnload \n");
 		}
@@ -336,6 +333,7 @@ Result DoManifest() //复位芯片，退出DFU模式
 	struct InterfaceDescriptor iface;
 	struct DFUStatus status;
 
+	printf("\n----------------DoManifest-----------------\n");
 	// Ensure that the transport has been started
 	Progress(manifest_start_runtime);
 	result = DoConnect(true,false);

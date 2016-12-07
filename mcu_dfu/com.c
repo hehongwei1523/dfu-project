@@ -6,10 +6,12 @@
 
 #pragma warning(disable: 4996)
 
+#include "e_type.h"
 #include "com.h"
 #include <fcntl.h>
 #include <stdio.h>
 //#include <windows.h>
+#include "bcspimplementation.h"
 
 #define STRICT 1 
 #define VERBOSE 1
@@ -85,13 +87,9 @@ int BCSP_init()
 // Initialize port
 int com_init(char *s)
 {
-	//BCSP_init();
-	//return 0;
-
 	DCB DCBData;
 	//char sPortName[512];
 
-	//sprintf(sPortName, "\\\\.\\%s", s);
     //hCOMHnd = CreateFile(OpenComName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);//FILE_ATTRIBUTE_NORMAL
 	hCOMHnd = CreateFile(L"\\\\.\\COM6", GENERIC_READ | GENERIC_WRITE,0, NULL, OPEN_EXISTING, 0, NULL);
 
@@ -109,9 +107,9 @@ int com_init(char *s)
 	//设置读超时
 	COMMTIMEOUTS timeouts; //add 2016-11-16
 	GetCommTimeouts(hCOMHnd, &timeouts);
-	timeouts.ReadIntervalTimeout =  0;
-	timeouts.ReadTotalTimeoutMultiplier = 10;
-	timeouts.ReadTotalTimeoutConstant = 1;// 500;// 60000;  //2016-11-23 时间缩小,不能为0
+	timeouts.ReadIntervalTimeout = 0;// MAXDWORD;
+	timeouts.ReadTotalTimeoutMultiplier = 10;// 10;
+	timeouts.ReadTotalTimeoutConstant = 1;// 1;// 500;// 60000;  //2016-11-23 时间缩小,不能为0
 	timeouts.WriteTotalTimeoutMultiplier = 0;
 	timeouts.WriteTotalTimeoutConstant = 0;
 	SetCommTimeouts(hCOMHnd, &timeouts);
@@ -244,6 +242,17 @@ int com_put(char data)
 	return 0;
 }
 
+/*
+BOOL ReadFile(
+HANDLE hFile,                                    //文件的句柄
+LPVOID lpBuffer,                                //用于保存读入数据的一个缓冲区
+DWORD nNumberOfBytesToRead,    //要读入的字节数
+LPDWORD lpNumberOfBytesRead,    //指向实际读取字节数的指针
+LPOVERLAPPED lpOverlapped
+//如文件打开时指定了FILE_FLAG_OVERLAPPED，那么必须，用这个参数引用一个特殊的结构。
+//该结构定义了一次异步读取操作。否则，应将这个参数设为NULL
+);
+*/
 
 unsigned char com_get()
 {
@@ -257,7 +266,12 @@ unsigned char com_get()
 	DWORD CommEvent = 0xff;
 
 #if 1
-	bRes = ReadFile(hCOMHnd, &data, 1, &dwRead, NULL);
+	bRes = ReadFile(hCOMHnd, &data, 1, &dwRead, NULL); //每次只读取一个字节，并返回该值，当读不到数据时，返回0xcc
+	//根据dwRead判断是否读取数据成功
+	if (dwRead == 1) //读到一个数据
+	{
+		;
+	}
 #else
 	//获取串口事件掩码 
 	GetCommMask(hCOMHnd, &CommEvent);
