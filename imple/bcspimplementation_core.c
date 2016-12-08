@@ -365,8 +365,7 @@ void main_run(void)
 	{
 		if (set_event == EVENT_BCSP_DATA)
 		{
-			set_event = 0x00;		
-
+			set_event = 0x00;				
 			rcv_count++;
 			if (rcv_count == 100)
 				rcv_count = 4;	
@@ -571,28 +570,28 @@ uint8 uart_get_data[30] = { 0 };
 void BCSP_DATA_RCV(void)
 {
 	int debug=0;
-#if 0
-	if(bcspImplementation.mRCVBytesAvailable != 0)
-	   printf("mRCVBytesAvailable error \n");
-#endif
+
+	//感觉是handle直接跳过了ptr的位置，导致handle永远不等于ptr
 	while (uart_handle != uart_ptr)
 	{
+#if 0
 		debug++;
-
+		printf("=%p ", uart_handle);
 		if (debug == 230)
 		{
+			printf("uart_ptr = %p \n", uart_ptr);
 			printf("\n --run-- \n");
 			//return; //直接退出会导致setjump出错 2016-12-7
 			//exit(0);
 		}
-#if 0
+
 		if (debug > 200)
 		{
 			printf("\n ++run++ \n");
 		}
-#endif
-		printf("0x%x ", *uart_handle);
 
+		printf("0x%x ", *uart_handle);
+#endif
 		if (*uart_handle == 0xc0)
 		{
 			bcspImplementation.mRCVBuffer[bcspImplementation.mRCVBytesAvailable++] = 0xc0;
@@ -602,25 +601,30 @@ void BCSP_DATA_RCV(void)
 			{
 
                bcspImplementation.mRCVBuffer[bcspImplementation.mRCVBytesAvailable++] = *uart_handle;	
-
+#if 0
 			   if (bcspImplementation.mRCVBytesAvailable > 127)  //突然串口来了一堆错乱的数据，导致程序出现异常
 			   {
-#if 0
+
 				   for (int i = 0; i < 120; i++)
 				   {
 					  printf("mRCVBuffer[%d] = 0x%x \n", i, bcspImplementation.mRCVBuffer[i]);
 				   }
-#endif				
+				
 				   //load_the_stack_buffer();
 				   //bcspImplementation.mRCVBytesAvailable = 0; //强制清零
 				   //对windows串口做点处理 -- 还没处理好 2016-12-5
 				   //memset(bcspImplementation.mRCVBuffer, 0x00, 128);		   
 				   //return;
 			   }
-			   
+#endif			   
 			   uart_next();
 			}
 			bcspImplementation.mRCVBuffer[bcspImplementation.mRCVBytesAvailable++] = 0xc0;
+			if (uart_handle == uart_end -1)//当uart_ptr刚好等于uart_end的时候，将ptr提前一位，避免handle追不到ptr 2016-12-8
+			{
+				//uart_handle++;
+				uart_ptr--;
+			}
 
 		}
 

@@ -10,6 +10,12 @@ char set_event = 0;
 uint8 uart_data=0;
 uint8 sendpdu_flag = 0;
 
+#define uart_buf_size 100
+uint8 uart_buf[uart_buf_size];
+uint8 * uart_ptr = uart_buf;
+uint8 * uart_end = uart_buf + uart_buf_size;
+uint8 uart_data;
+
 void * Uart_Rcv(void* g)
 {
 	uint8 data;
@@ -27,7 +33,7 @@ void * Uart_Rcv(void* g)
 #else
 		*uart_ptr++ = com_get();
 #endif
-		printf("(0x%x)", *(uart_ptr-1));
+		//printf("(0x%x)", *(uart_ptr-1));
 
 		if ( (*(uart_ptr - 1) == 0xc0) ) //&& (*(uart_ptr-2) != 0xc0) )
 		{

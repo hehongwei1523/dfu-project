@@ -129,9 +129,6 @@
     <ClCompile Include="..\engine\pdu.c">
       <Filter>源文件\engine</Filter>
     </ClCompile>
-    <ClCompile Include="..\imple\usart.c">
-      <Filter>源文件\engine</Filter>
-    </ClCompile>
     <ClCompile Include="main_0.cpp">
       <Filter>源文件</Filter>
     </ClCompile>

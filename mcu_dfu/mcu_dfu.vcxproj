@@ -179,7 +179,6 @@
     <ClCompile Include="..\engine\pdu.c" />
     <ClCompile Include="..\imple\bcspimplementation_core.c" />
     <ClCompile Include="..\imple\BCSPTransport.c" />
-    <ClCompile Include="..\imple\usart.c" />
     <ClCompile Include="com.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="main_0.cpp" />
