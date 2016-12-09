@@ -91,10 +91,12 @@ void Packet_Rcv_download(void)
 void Packet_Rcv(void) //这部分内容处理得不是很好
 {
 	uart_get = uart_handle;
+	//printf("  ---  \n");
+	Sleep(1);//这里添加延时后，数据接收很流畅。 Getstatus函数不会处理出错 2016-12-8
 	while (uart_get != uart_ptr)
 	{
 		int i = 0, j = 0, k = 0;
-		//printf("  time  \n");
+		printf("  time  \n");
 		Sleep(5);
 		if (*uart_get == 0xc0)
 		{
@@ -117,9 +119,9 @@ void Packet_Rcv(void) //这部分内容处理得不是很好
 					uart_get_data[i++] = *uart_get; 
 					//printf("flag");
 				}
-				//printf("0x%x  ", *uart_get);  //调试打印 :不打印时，会接收不到数据
+				printf("0x%x  ", *uart_get);  //调试打印 :不打印时，会接收不到数据
 				//if(k==4) printf(")");
-				if (j > 30) break;
+				//if (j > 30) break;
 				uart_get_next();
 			}
 		}
@@ -140,7 +142,7 @@ void sendpdu_download(void)
 	   if (sendpdu_flag == 4)
 		   break;
 	}
-	Sleep(60);   //不接收download的应答，延迟一段时间，等待uart数据的接收
+	Sleep(50);   //不接收download的应答，延迟一段时间，等待uart数据的接收
 #if 0
 	while (Packet_Rcv_Flag != 1)
 	{
@@ -197,7 +199,7 @@ Result ControlRequest(const struct Setup setup, void *buffer, uint16 bufferLengt
 	uint32 time_begin = ms_clock();
 	while (Packet_Rcv_Flag != 1)
 	{
-		Packet_Rcv(); //Sleep(2);
+		Packet_Rcv();
 		if ((ms_clock() - time_begin) > 2000) //接收超时则跳出循环 2016-11-22
 		{
 			printf("time out \n");
@@ -205,7 +207,7 @@ Result ControlRequest(const struct Setup setup, void *buffer, uint16 bufferLengt
 		}
 	}
 
-	printf(" Rcv over \n");//数据接收执行完毕
+	//printf(" Rcv over \n");//数据接收执行完毕
 /*****************************************/
       
     if (replyLength) *replyLength = bufferLength;

@@ -26,6 +26,7 @@ uint16 BlockNum = 1;
 uint8 * abuff = "123454321";
 uint16 BufferLength = 8;
 
+uint8 LinkEstablishment_Flag = 0x00;
 
 void onLinkFailSync( void * aThis )
 {
@@ -156,12 +157,11 @@ static const uint8 GetDevice_data[] = {
 
 uint8 sync_data[13] = { 0xc0, 0x40, 0x41, 0x00, 0x7e, 0xda, 0xdc, 0xed,  0xed, 0xa9, 0x7a, 0xc0, '\0' };
 
-uint16 rcv_count = 0;
+uint16 rcv_count = 0; //link 数据包接收标志位
 
 uint8* download_file_buf;  //要获取的字符串  
 long download_file_len;    //获取的长度  类型设为long,否则会显示不完整 2016-12-5
-const char * download_file_path = "c:\\dfu\\app2.dfu"; /*路径要用双斜杠\\ */  //"c:\\dfu\\no-key\\combined5.dfu";
-
+const char * download_file_path = "c:\\dfu\\my.dfu";//"c:\\dfu\\no-key\\combined5.dfu";// /*路径要用双斜杠\\ */  
 
 void File_Handle(void)
 {
@@ -173,9 +173,9 @@ void File_Handle(void)
 		fseek(download_file, 0, SEEK_END);   //移到尾部  
 		download_file_len = ftell(download_file);          //提取长度  
 		rewind(download_file);               //回归原位  
-		printf("count the file content len = %d \n", download_file_len);
+		//printf("count the file content len = %d \n", download_file_len);
 		//分配buf空间  
-		download_file_buf = (uint8*)malloc(sizeof(uint8) * download_file_len + 1);
+		download_file_buf = (uint8*)malloc(sizeof(uint8) * download_file_len + 1);//申请内存空间，存放dfu文件内容
 		if (!download_file_buf) {
 			printf("malloc space is not enough. \n");
 			return NULL;
@@ -236,10 +236,10 @@ Result donwnload(void)
 
 	if (download_file_len < bufferLength)
 	{
-		printf("download_file_len < bufferLength \n");
-		Dnload(0, download_file_buf, (uint16)download_file_len);
+		printf("block = %d,bufferLength= %d \n", blockNum, (uint16)download_file_len);
+		Dnload(blockNum, download_file_buf, (uint16)download_file_len);
 		DoDownloadStatus(&status);
-		return;
+		blockNum++;
 	}
 	else
 	{
@@ -263,7 +263,7 @@ Result donwnload(void)
 
 	// End the download
 	result = ProgressCheck(97);
-	Sleep(100);
+	printf("block = %d,bufferLength= 0 \n", blockNum);
 	if (result) result = Dnload(blockNum, 0, 0);
 	if (!result) return result;
 
@@ -304,7 +304,7 @@ void * Thread4(void * a)
 			LinkEstablishment_Flag = 0;
 			donwnload();
 
-			Sleep(5000);
+			Sleep(1000);
 
 			DoManifest();
 
@@ -351,7 +351,7 @@ void * Thread2(void * a)
 {
 	while(1)
 	{ 
-		Uart_Rcv(NULL);   //这里影响到线程3 ？
+		Uart_Rcv(NULL);
 		//printf("  2  ");
 
 	}
@@ -360,7 +360,7 @@ void * Thread2(void * a)
 
 void main_run(void)
 {
-	File_Handle();//File_Test();//
+	File_Handle();
 	while (1)
 	{
 		if (set_event == EVENT_BCSP_DATA)
@@ -412,39 +412,6 @@ void BCSPImplementation_createBCSPStack()
       bcspImplementation.Packets[c] = pkt;
                
     }
-    /*
-    PacketPool * pool = &bcspImplementation.mStack->thePacketPool ;
-    PacketBuffer * buf = &pool->buffer;
-    Queue * Tqueue = &buf->queue;
-    printf("Tqueue = %x ",Tqueue->head);
-    */
-}
-
-#define WRITEFILE_PERIOD 500
-void wait(uint32 wakeupTime)
-{
-	//this function just puts the stack thread into idle until some
-	//event (or timeout) wakes us up.
-	int32 timeout = wakeupTime - ms_clock();
-	if (timeout <= 0)
-		return;
-
-	// There appears to be a bug in the WriteFile
-	// implementation under Win98.  Occasionally, the WriteFile never
-	// sets the completion event.  Close down and then reopen the com port 
-	// if the writefile hasn't completed after a certain period.
-	
-	if (bcspImplementation.mXMITBusy && (ms_clock() - bcspImplementation.mLastXmitTime > WRITEFILE_PERIOD))
-	{
-	//BTRACE3(WINERR,"Cancelling IO at time %d (%d ms from %d)\n", ms_clock(), WRITEFILE_PERIOD, mLastXmitTime);
-	bcspImplementation.mLastXmitTime = ms_clock() ;
-	bcspImplementation.mXMITBusy = false;
-	bcspImplementation.mRCVBusy = false;
-	//bcspImplementation.mFile->reopen();
-	return;
-	}
-	
-	//on with the real code...
 }
 
 uint32 ms_clock (void)//系统节拍计数（ms）
@@ -493,7 +460,7 @@ void BCSPImplementation_runStack(void)
 
 				//判断数组中是否有相邻的0xc0,如有表示数据包到此结束，直接发送后退出函数
 				if (sendpdu_flag == 2)
-				for (int i = 10; i < 126; i++)
+				for (int i = 1; i < BYTE_BUFFERSIZE; i++) //起始大小设置为较小的值，避免0xc0出现在较前的位置，导致mXMITBuffer再发送一次
 				{
 					if ((bcspImplementation.mXMITBuffer[i] == 0xc0) && (bcspImplementation.mXMITBuffer[i + 1] == 0xc0))
 					{
@@ -514,7 +481,7 @@ void BCSPImplementation_runStack(void)
 				com_write(&bcspImplementation.mXMITBuffer, bcspImplementation.mXMITBytesAvailable);
 
 #if 1
-				if (bcspImplementation.mXMITBuffer[1] == 0xff)
+				if ((bcspImplementation.mXMITBuffer[0] == 0xc0) && (bcspImplementation.mXMITBuffer[1] == 0xff))
 				{
 
 					BCSPStack * stack = bcspImplementation.mStack;
@@ -531,7 +498,7 @@ void BCSPImplementation_runStack(void)
 					disposePacketBuffer(stack, &stack->PacketDelivererInput);
 					disposePacketBuffer(stack, &stack->LinkEstablishmentInput);
 					disposePacketBuffer(stack, &stack->RCVInputBuffer);
-					disposePacket(stack, stack->theSLIPState.RCVpkt);
+					//disposePacket(stack, stack->theSLIPState.RCVpkt);
 
 					return;
 				}
@@ -548,7 +515,7 @@ void load_the_stack_buffer(void)
 {
     //now try loading the stack receive buffer
     if (bcspImplementation.mRCVBytesAvailable 
-       &&(bcspImplementation.mRCVBytesAvailable <= numFreeSlotsInReceiveBuffer(bcspImplementation.mStack)))
+         &&(bcspImplementation.mRCVBytesAvailable <= numFreeSlotsInReceiveBuffer(bcspImplementation.mStack)))
     {
       //将接收到得字节写入到mStack.SLIPByteInput中
       writeToReceiveBuffer(bcspImplementation.mStack,bcspImplementation.mRCVBuffer,(uint8) bcspImplementation.mRCVBytesAvailable) ;
@@ -569,29 +536,8 @@ uint8 uart_get_data[30] = { 0 };
 //处理串口接收到的数据包，0xC0开始，0xC0结束 
 void BCSP_DATA_RCV(void)
 {
-	int debug=0;
-
-	//感觉是handle直接跳过了ptr的位置，导致handle永远不等于ptr
 	while (uart_handle != uart_ptr)
 	{
-#if 0
-		debug++;
-		printf("=%p ", uart_handle);
-		if (debug == 230)
-		{
-			printf("uart_ptr = %p \n", uart_ptr);
-			printf("\n --run-- \n");
-			//return; //直接退出会导致setjump出错 2016-12-7
-			//exit(0);
-		}
-
-		if (debug > 200)
-		{
-			printf("\n ++run++ \n");
-		}
-
-		printf("0x%x ", *uart_handle);
-#endif
 		if (*uart_handle == 0xc0)
 		{
 			bcspImplementation.mRCVBuffer[bcspImplementation.mRCVBytesAvailable++] = 0xc0;
@@ -633,7 +579,6 @@ void BCSP_DATA_RCV(void)
 
 }
 
-
 struct DeviceDescriptor descriptor;
 
 static const uint8 GetDevice_Return[] = {
@@ -648,10 +593,6 @@ uint8 GetStatus_data[] = { 0xc0, 0xd2, 0x8c, 0x00, 0xa1, 0xa1, 0x03,  0x00, 0x00
 
 uint8 GetFunct_data[] = { 0xc0, 0xd2, 0x8c, 0x00, 0xa1, 0xc1, 0x09,  0x00, 0x00, 0x00, 0x00,
 0x06, 0x00, 0x0a, 0xa2, 0xc0,'\0' };
-
- 
-uint8 LinkEstablishment_Flag = 0x00;
-
 
 
 void Func_Test(void)

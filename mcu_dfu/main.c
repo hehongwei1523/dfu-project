@@ -4,13 +4,13 @@
 #include "bcspimplementation.h"
 #include "usart.h"
 #include <windows.h>
-char * ComName = "COM10";  //not true,just for debug
+char * ComName = "COM10";  //not useful,just for debug
 char set_event = 0;
 
 uint8 uart_data=0;
 uint8 sendpdu_flag = 0;
 
-#define uart_buf_size 100
+#define uart_buf_size 128
 uint8 uart_buf[uart_buf_size];
 uint8 * uart_ptr = uart_buf;
 uint8 * uart_end = uart_buf + uart_buf_size;

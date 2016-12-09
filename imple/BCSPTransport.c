@@ -28,8 +28,6 @@ _BCSPTransport bcsptransport;
 
 typedef struct BCSPCallBackInfo
 {
-    //BCSPCallBackInfo ( PDU::bc_channel channel ) : packet ( channel ) {}
-    //BCSPCallBackInfo ( const PDU & pdu ) : packet ( pdu ) {}
     BCTransferRequest req;
     struct BCSPTransport * object;
 
@@ -102,22 +100,6 @@ static void RPC_Func(uint8 *buff,int size)
     addPacketToBuffer(bcspImplementation.mStack,&bcspImplementation.mStack->SEQInput, pkt);//MUXUnreliableInput //PacketDelivererInput  //RCVInputBuffer,pkt);发送不出 
 }
 
-static void RPC_Func_res(uint8 *buff, int size)
-{
-	//disposePacketBuffer(bcspImplementation.mStack, &bcspImplementation.mStack->SEQInput);
-	//BCSPshutdownStack(bcspImplementation.mStack);
-	
-	Packet * pkt;
-	pkt = SYNCBLKgetPacketFromPool(bcspImplementation.mStack, modeRCV, 0);//
-	//pkt->data = NULL;
-	setLength(pkt, 0);
-	setProtocolId(pkt, 0x0c);//DFU ID
-	setProtocolType(pkt, BCSPChannelUnreliable);//BCSPChannelUnreliable); //可靠数据包
-	addPacketToBuffer(bcspImplementation.mStack, &bcspImplementation.mStack->SEQInput, pkt);//MUXUnreliableInput //PacketDelivererInput  //RCVInputBuffer,pkt);发送不出 
-    
-}
-
-uint8 ff_flag = 0;
 void sendpdu ( uint8 *buff, int size )
 {
    
@@ -147,11 +129,7 @@ void sendpdu ( uint8 *buff, int size )
 
 void onPacketToChip ( BCTransferRequest * req, BCTransferStatus status, void * info )
 {
-    /*
-    struct BCSPCallBackInfo* lInfo = (struct BCSPCallBackInfo*)info;
 
-    //lInfo->sentPdu->set();
-    */
 }
 
 void onPacketFromChip (BCTransferRequest *req , BCTransferStatus status, void *info)
@@ -166,14 +144,7 @@ void onPacketFromChip (BCTransferRequest *req , BCTransferStatus status, void *i
 
 void processDataFromChip ( BCTransferRequest * req, enum bc_channel ch )
 {
-  /*
-    //  collect the data.
-    //  expose the data received
-    recvData (ch, req->data, req->length);
-    //  reset the transfer request to the right size.
-    BCreloadTransferRequest( req , req->data , bcsptransport.mBufferSize) ;
-    BCSPreadPacket( &bcsptransport.channels , req );
-    */
+
 }
 
 void setConfig ( uint32 aResendTimeout , uint32 aRetryLimit , 

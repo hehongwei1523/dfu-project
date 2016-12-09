@@ -34,13 +34,8 @@ Result ProgressCheck(int num)
 // Implementation of operations
 Result DoReconfigure(bool checkUpload ,bool checkDownload ,DFUFile *checkFile)
 { 
-   Result result;
-   /*
-   struct DeviceDescriptor device;
-   struct InterfaceDescriptor iface;
-   struct DFUFunctionalDescriptor functional;
-   struct DFUStatus status;
- */
+    Result result;
+
 	// Attempt to start the transport (could be slow for UART)
 	Progress(reconfigure_connect);
    /* 与芯片建立连接 */
@@ -224,74 +219,12 @@ Result DoDownload(DFUFile file) //烧录过程
 	}
     //文件处理
 	// Perform the download
-	Progress(download_progress);
-	result = PreDnload(file);
-	if (!result) return result;
-
-	//file->SeekToBegin();
-	uint16 blockNum = 0;
-	uint16 bufferLength = functional.wTransferSize;
-	for(int i=0;i<2;i++)
+	int blockNum = 0;
+    //Download Function
 	{
-	/*
-	SmartPtr<uint8, true> buffer(new uint8[bufferLength]);
-  
-	while (file->GetPosition() != file->GetLength())
-	{
-		// Update the progress indicator
-		int percent = 3 + (92 * file->GetPosition()) / file->GetLength();
-		result = ProgressCheck(percent);
-		if (!result) return result;
 
-		// Extract the next block from the DFU file
-		uint16 next = file->Read(buffer, bufferLength);
-*/
-		printf("\n:::::i = %d :::::", i);
-		Sleep(100);
-		// Check the status
-		result = DoDownloadStatus(&status);
-		if (!result) return result;
-		
-		// Download the next block
-		if (i == 0)
-			result = Dnload(0, &download_file, 1023);// sizeof(download_file) / sizeof(uint8));//   BufferLength);
-		if (i == 1)
-		{
-			Sleep(100);//延时要足够长  2016-11-30
-			result = Dnload(1, &download_file1, 221);// sizeof(download_file1) / sizeof(uint8));
-			printf("second dnload \n");
-		}
-		//result = Dnload(blockNum++, buffer, next);
-		//if (!result) return result;
-
-		// Update the progress indicator again
-		Progress(download_progress);
-
-		AccurateSleep(shortTimeout);
-		Sleep(100);
-		// Check the stutus is OK (use newStatus to ensure we don't overwrite old time)
-			
-		// Use different status so we don't get next write time!!
-		
-		result = DoDownloadStatus(&newStatus);
-		if (!result) return result;
-
-		// Use new bState!!
-		if (newStatus.bState == dfu_dnload_busy)
-		{
-			// Wait the proper amout of time!!
-			if (status.bwPollTimeout < downloadProgressMilliseconds) 
-			{
-			  // Use original status
-			  AccurateSleep(status.bwPollTimeout);
-			}
-			else 
-			{
-			  // Use original status
-			  AccurateSleep(status.bwPollTimeout, download_processing);
-			}
-		}
 	}
+
 	printf("\n----------------run in Checking----------------- \n");
      //校验
 	// Check the status
@@ -302,7 +235,7 @@ Result DoDownload(DFUFile file) //烧录过程
 	if (!result) return result;
 
 	// End the download
-	result = ProgressCheck(97); blockNum = 2;
+	result = ProgressCheck(97); 
 	Sleep(100);
 	if (result) result = Dnload(blockNum, 0, 0);
 	if (!result) return result;
@@ -344,9 +277,11 @@ Result DoManifest() //复位芯片，退出DFU模式
 	// Perform a reset and restart transport
 	result = ProgressCheck(10);
 	if (result) result = Reset(false);
+
 	if (result) result = DoConnect(false,false);
 	if (!result) return result;
 
+#if 0
 	// Read the device descriptor to determine mode
 	result = ProgressCheck(30);
 	if (result) result = GetDevice(&device);
@@ -407,7 +342,7 @@ Result DoManifest() //复位芯片，退出DFU模式
 	result = Reset(false);
 	if (!result) result = Disconnect();
 	if (!result) return result;
-
+#endif
 	// Successful if this point reached
 	return success;
 }
@@ -519,7 +454,7 @@ Result DoDownloadStatus(struct DFUStatus * status)
 	result = GetStatus(status);
 	if (!result) return result;
 
-	printf("status->bState = %d ", status->bState);
+	printf("bState = %d ", status->bState);
 	
 	// Special case if busy
 	if ((status->bState == dfu_dnload_busy) || (status->bState == dfu_manifest))

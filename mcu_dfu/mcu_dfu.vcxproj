@@ -182,7 +182,6 @@
     <ClCompile Include="com.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="main_0.cpp" />
-    <ClCompile Include="main_1.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

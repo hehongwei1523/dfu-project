@@ -17,8 +17,6 @@
 #define VERBOSE 1
  HANDLE hCOMHnd;          // Handle serioveho portu
 
-//WCHAR * OpenComName = "\\\\.\\COM14";
-//char * OpenComName = "\\\\.\\COM10";
 
 DWORD dwError;
 
@@ -34,61 +32,14 @@ static const int comDataBits = 8;
 static const int comStopBits = ONESTOPBIT;
 static const int comParity = EVENPARITY;
 
-
 #define true 1
 #define false 0
 
-int BCSP_init()
-{
-	hCOMHnd = CreateFile(L"\\\\.\\COM6", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-	// Start a BCSP transport
-	if (hCOMHnd == INVALID_HANDLE_VALUE)
-	{
-		printf("Init failed...\n");
-	}
-	else
-	{
-		// Purge any operations in progress
-		if (!PurgeComm(hCOMHnd, PURGE_TXABORT | PURGE_RXABORT | PURGE_TXCLEAR | PURGE_RXCLEAR))
-		{
-			return 0;
-		}
-		// Configure the COM port for BCSP
-		DCB dcb;
-		if (!GetCommState(hCOMHnd, &dcb))
-		{
-			return 0;
-		}
-		dcb.BaudRate = CBR_115200;
-		dcb.fBinary = true;
-		dcb.fParity = comBCSPParity != NOPARITY;
-		dcb.fOutxCtsFlow = false;
-		dcb.fOutxDsrFlow = false;
-		dcb.fDtrControl = DTR_CONTROL_ENABLE;
-		dcb.fDsrSensitivity = false;
-		dcb.fOutX = false;
-		dcb.fInX = false;
-		dcb.fErrorChar = false;
-		dcb.fNull = false;
-		dcb.fRtsControl = comBCSPRtsControl;
-		dcb.fAbortOnError = false;
-		dcb.ByteSize = comBCSPDataBits;
-		dcb.Parity = comBCSPParity;
-		dcb.StopBits = comBCSPStopBits;
-		dcb.ErrorChar = comBCSPErrorChar;
-		if (!SetCommState(hCOMHnd, &dcb))
-		{
-			return 0;
-		}
-
-	}
-}
 
 // Initialize port
 int com_init(char *s)
 {
 	DCB DCBData;
-	//char sPortName[512];
 
     //hCOMHnd = CreateFile(OpenComName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);//FILE_ATTRIBUTE_NORMAL
 	hCOMHnd = CreateFile(L"\\\\.\\COM6", GENERIC_READ | GENERIC_WRITE,0, NULL, OPEN_EXISTING, 0, NULL);
@@ -136,7 +87,7 @@ int com_init(char *s)
    //以下设置替代函数BuildCommDCB
 	DCBData.ByteSize = 8;
 	DCBData.StopBits = ONESTOPBIT;
-	DCBData.BaudRate = CBR_115200;
+	DCBData.BaudRate = CBR_115200; //460800; // CBR_256000;// 
 	DCBData.Parity = comBCSPParity; //2016-11-15  切记，设置停止位:2
 	//BuildCommDCB("115200,N,8,1", &DCBData);  //注意：这里会出错，导致返回87号错误
 

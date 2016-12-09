@@ -16,9 +16,6 @@
 #define MARKPARITY          3
 #define SPACEPARITY         4
 
-// BCSP sync message
-//static const uint8 bcspSync[] = {0xDA, 0xDC, 0xED, 0xED};
-
 // USB control request status
 enum usbStatus
 {
@@ -155,14 +152,14 @@ extern uint8 rcv_count;
 Result RPCConnect(bool hintDFU)  //与芯片建立BCSP联系
 {
     Result result;
-//free(bcspImplementation.mStack);
-	//BCSPshutdownStack(bcspImplementation.mStack);
+
+	//释放内存，重置变量
 	BCSPImplementation_deleteBCSP();
 	/*每次连接都初始化BCSP参数*/
 	BCSPImplementation_Environment();
 	BCSPTransport();
 	
-	rcv_count = 1; 
+	rcv_count = 1;
 	LinkEstablishment_Flag = 0x00;
 	uint32 time_begin = ms_clock();
 	while ( LinkEstablishment_Flag != 0x02)
