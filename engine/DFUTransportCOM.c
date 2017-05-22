@@ -129,20 +129,23 @@ void Packet_Rcv(void) //这部分内容处理得不是很好
 		uart_get_next();	
 	}
 }
-
+uint8 DFU_PACKET_END = 0;
+uint8 DFU_FILE_END = 0;
 void sendpdu_download(void)
 {
-	Packet_Rcv_Flag = 0x00; //接收函数之前必须清理标志位，否则导致判断直接跳过，接收不到数据
-	uint32 time_begin = ms_clock();
+	//Packet_Rcv_Flag = 0x00; //接收函数之前必须清理标志位，否则导致判断直接跳过，接收不到数据
+	//uint32 time_begin = ms_clock();
 	
 	int i = 9;
 	while (i--) //发收分离
 	{
-       BCSPImplementation_runStack();
+	   DFU_PACKET_END = i;
+       BCSPImplementation_runStack();Sleep(10);
 	   if (sendpdu_flag == 4)
 		   break;
 	}
 	Sleep(50);   //不接收download的应答，延迟一段时间，等待uart数据的接收
+	//经测试，该时间太短会导致串口接收数据不全，陷入死循环 2017-5-19
 #if 0
 	while (Packet_Rcv_Flag != 1)
 	{
@@ -155,6 +158,7 @@ void sendpdu_download(void)
 		}
 	}
 #endif
+	//由于这个工程串口应答是线程处理，与wifi模块不同，因此sendpdu_flag不能设置为0
 	sendpdu_flag = 2;
 	//printf("download \n");
 }

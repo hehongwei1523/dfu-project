@@ -109,6 +109,10 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>message.map</MapFileName>
+      <MapExports>true</MapExports>
+      <AssemblyDebug>true</AssemblyDebug>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

@@ -161,7 +161,7 @@ uint16 rcv_count = 0; //link 数据包接收标志位
 
 uint8* download_file_buf;  //要获取的字符串  
 long download_file_len;    //获取的长度  类型设为long,否则会显示不完整 2016-12-5
-const char * download_file_path = "c:\\dfu\\my.dfu";//"c:\\dfu\\no-key\\combined5.dfu";// /*路径要用双斜杠\\ */  
+const char * download_file_path = "c:\\dfu\\no-key\\save\\image_sink.dfu";//"c:\\dfu\\no-key\\combined.dfu";//"c:\\dfu\\my.dfu";// /*路径要用双斜杠\\ */  
 
 void File_Handle(void)
 {
@@ -192,8 +192,9 @@ void File_Handle(void)
 		{
 			if ((download_file_buf[i+4] == 0x00) && (download_file_buf[i+3] == 0x01) &&
 				(download_file_buf[i+2] == 0xff) && (download_file_buf[i+1] == 0xff))
-			{		
+			{
 				download_file_len = i+1;
+				break;//2017-5-17 add ,有些DFU文件非后缀也能出现该排列，因此遇到一次后就直接跳过了
 				//printf("download_file_len = %d ", download_file_len);
 			}
 		}
@@ -247,13 +248,19 @@ Result donwnload(void)
 		do
 		{
 			long address_offset = blockNum * bufferLength;
-			if (times == 0) bufferLength = download_file_len % bufferLength;
+			if (times == 0)
+			{
+				bufferLength = download_file_len % bufferLength;
+				DFU_FILE_END = 1;
+			}
 			printf("block = %d,bufferLength= %d \n", blockNum, bufferLength);
 			Dnload(blockNum, download_file_buf + address_offset, bufferLength);
 			DoDownloadStatus(&status);
+			//GetStatus(&status);
 			blockNum++;
 		} while (times--);
 	}
+	
 	printf("\n----------------run in Checking----------------- \n");
 	//校验
 	// Check the status
@@ -266,10 +273,10 @@ Result donwnload(void)
 	printf("block = %d,bufferLength= 0 \n", blockNum);
 	if (result) result = Dnload(blockNum, 0, 0);
 	if (!result) return result;
-
+	
 	// Wait for the operation to complete (do not check for abort)
 	Progress(98);
-
+	
 	// Check the status if manifestation tolerant
 	if (functional.bmAttributes & attribute_manifestation_tolerant)
 	{
@@ -281,20 +288,21 @@ Result donwnload(void)
 	// Successful if this point reached
 	return success;
 }
-
+time_t  t;
 void * Thread4(void * a)
 {
-
 	while (1)
 	{
-
-#if 1
 		if (LinkEstablishment_Flag == 0x02) //表示BCSP连接成功
 		{
+			time(&t);
+
 			connected = 1;
 
 			Sleep(100);
-			//Func_Test();
+
+			Func_Test();	
+
 			Do_After_Connect();
 
 			//DoReconfigure(false, false, "abc");
@@ -304,24 +312,19 @@ void * Thread4(void * a)
 			LinkEstablishment_Flag = 0;
 			donwnload();
 
-			Sleep(1000);
-
-			DoManifest();
-
+			//Sleep(1000);
+			
 			printf("Test End !\n");
-			exit(0);
-		}
-#endif
-/*
-		if (getchar() == 's')
-		{
-			//rcv_count = 0;
-			printf(" 444444444  ");
-			DoReconfigure(false, false, "abc");
-			exit(0);
-		}*/	
-	}
+			LinkEstablishment_Flag = 0x00;
 
+			printf("Start Time now is %s\n", ctime(&t));
+			time(&t);
+			printf("End Time now is %s\n", ctime(&t));
+
+            DoManifest();
+
+		}
+	}
 	return NULL;
 }
 
@@ -416,9 +419,9 @@ void BCSPImplementation_createBCSPStack()
 
 uint32 ms_clock (void)//系统节拍计数（ms）
 {
-	volatile uint32 count = GetTickCount() - SYSTEM_TIME;
+	volatile uint32 count = 0; //GetTickCount() - SYSTEM_TIME;//1000;//
   //printf("count = %d \n",count);
-  return count;
+	return count;//2017-5-19  计数不影响程序逻辑
 }
 
 void BCSPImplementation_runStack(void)
@@ -426,6 +429,7 @@ void BCSPImplementation_runStack(void)
     //here's where we actually run round in a loop calling the scheduler...
     //while(!bcspImplementation.mStackMustDie)
     {
+		//if (sendpdu_flag == 2) printf(" 1-%d ", GetTickCount());
         uint32 timeNow = ms_clock() ;
         uint32 wakeupTime = scheduler(bcspImplementation.mStack,timeNow) ;
         //now see if we can do anything with the uart...
@@ -434,10 +438,9 @@ void BCSPImplementation_runStack(void)
         {
             //copy stuff out of stack output buffer 
             bcspImplementation.mXMITBytesAvailable = numBytesInTransmitBuffer(bcspImplementation.mStack) ;
-            if (bcspImplementation.mXMITBytesAvailable)
-            {
-                readFromTransmitBuffer(bcspImplementation.mStack,bcspImplementation.mXMITBuffer, bcspImplementation.mXMITBytesAvailable) ;
-
+			if (bcspImplementation.mXMITBytesAvailable)
+			{
+				readFromTransmitBuffer(bcspImplementation.mStack, bcspImplementation.mXMITBuffer, bcspImplementation.mXMITBytesAvailable);
 				//接收部分很难处理，因此将输出部分进行判断，如果数组数据为0xdd(内存释放)，则退出函数，不进行发送 2016-11-30
 				if ((bcspImplementation.mXMITBuffer[6] == 0xdd) && (bcspImplementation.mXMITBuffer[7] == 0xdd) &&
 					(bcspImplementation.mXMITBuffer[8] == 0xdd) && (bcspImplementation.mXMITBuffer[9] == 0xdd))
@@ -460,26 +463,39 @@ void BCSPImplementation_runStack(void)
 
 				//判断数组中是否有相邻的0xc0,如有表示数据包到此结束，直接发送后退出函数
 				if (sendpdu_flag == 2)
-				for (int i = 1; i < BYTE_BUFFERSIZE; i++) //起始大小设置为较小的值，避免0xc0出现在较前的位置，导致mXMITBuffer再发送一次
 				{
-					if ((bcspImplementation.mXMITBuffer[i] == 0xc0) && (bcspImplementation.mXMITBuffer[i + 1] == 0xc0))
+					if ((DFU_FILE_END == 1) || ((DFU_FILE_END == 0) && (DFU_PACKET_END == 0)))
 					{
-						com_write(&bcspImplementation.mXMITBuffer, i+1);
-						sendpdu_flag = 4;
-						return;
+						//printf("packet = %d \n",DFU_PACKET_END);
+						for (int i = 1; i < BYTE_BUFFERSIZE; i++) //起始大小设置为较小的值，避免0xc0出现在较前的位置，导致mXMITBuffer再发送一次
+						{
+							if ((bcspImplementation.mXMITBuffer[i] == 0xc0) && (bcspImplementation.mXMITBuffer[i + 1] == 0xc0))
+							{
+								com_write(&bcspImplementation.mXMITBuffer, i + 1);
+								sendpdu_flag = 4;
+								return;
+							}
+						}
 					}
 				}
 
 				//download包发送完后，如果buff还会加载0x00 数据，则不发送
-				if (sendpdu_flag == 4) 
+				if (sendpdu_flag == 4)
 				{
+					//printf("4-- \n");  //每个数据包结束时必定会进入这里
 					if ((bcspImplementation.mXMITBuffer[6] == 0x00) && (bcspImplementation.mXMITBuffer[7] == 0x00) &&
 						(bcspImplementation.mXMITBuffer[8] == 0x00) && (bcspImplementation.mXMITBuffer[9] == 0x00))
 						return;
 				}
-
 				com_write(&bcspImplementation.mXMITBuffer, bcspImplementation.mXMITBytesAvailable);
 
+#if 0
+				if (connected == 1)
+				{
+					for (int i = 0; i < bcspImplementation.mXMITBytesAvailable; i++)
+						printf("(0x%x)", bcspImplementation.mXMITBuffer[i]);
+				}
+#endif
 #if 1
 				if ((bcspImplementation.mXMITBuffer[0] == 0xc0) && (bcspImplementation.mXMITBuffer[1] == 0xff))
 				{
@@ -612,7 +628,7 @@ void Func_Test(void)
 	 
 	if (result) result = GetFunct(&functional);
 	printf("(----descriptor---- %x )\n", functional.wDetachTimeout);
-	
+#if 0	
 	Sleep(100);
 	if (result) result = Detach(min(functional.wDetachTimeout, detachTimeout));//复位前调用该函数，芯片复位后还是DFU模式
 
@@ -622,33 +638,16 @@ void Func_Test(void)
 	Sleep(100); 
 	rcv_count = 0;
 	if (result) result = DoConnect(true, false);
-	
+#endif
+	int i = 9;
+	while(i--)
+	{ 
 	if (result) result = GetDevice(&device);
 	printf("(----device---- %x )\n", device.idProduct);
 
 	if (result) result = GetFunct(&functional);
 	printf("(----descriptor---- %x )\n", functional.wDetachTimeout);
-    //DoDownload("abc");
-	Sleep(100);
-	Dnload(0, &download_file, 1023);// sizeof(download_file) / sizeof(uint8));
-	DoDownloadStatus(&status);
-	Dnload(1, &download_file1, 221);
-	DoDownloadStatus(&status);
-	//Dnload(2, &download_file, 1023);
-	//DoDownloadStatus(&status);
-	//Dnload(3, &download_file1, 221);
-	//Sleep(100);
-	
-	if (result) result = GetDevice(&device);
-	printf("(----device---- %x )\n", device.idProduct);
 
-	if (result) result = GetFunct(&functional);
-	printf("(----descriptor---- %x )\n", functional.wDetachTimeout);
-	
-	/*
-	Sleep(100);
-	DoDownloadStatus(&status);
-	Dnload(2, &download_file1, 221);
-	DoDownloadStatus(&status);
-*/
+	}
+
 }

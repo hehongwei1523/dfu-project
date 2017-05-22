@@ -42,7 +42,7 @@ int com_init(char *s)
 	DCB DCBData;
 
     //hCOMHnd = CreateFile(OpenComName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);//FILE_ATTRIBUTE_NORMAL
-	hCOMHnd = CreateFile(L"\\\\.\\COM6", GENERIC_READ | GENERIC_WRITE,0, NULL, OPEN_EXISTING, 0, NULL);
+	hCOMHnd = CreateFile(L"\\\\.\\COM10", GENERIC_READ | GENERIC_WRITE,0, NULL, OPEN_EXISTING, 0, NULL);
 
 	if (hCOMHnd == INVALID_HANDLE_VALUE)
 	{
@@ -87,8 +87,8 @@ int com_init(char *s)
    //以下设置替代函数BuildCommDCB
 	DCBData.ByteSize = 8;
 	DCBData.StopBits = ONESTOPBIT;
-	DCBData.BaudRate = CBR_115200; //460800; // CBR_256000;// 
-	DCBData.Parity = comBCSPParity; //2016-11-15  切记，设置停止位:2
+	DCBData.BaudRate = CBR_115200; // CBR_256000;//460800; // 
+	DCBData.Parity = 0;// comBCSPParity; //2016-11-15  奇偶校验位：设为0
 	//BuildCommDCB("115200,N,8,1", &DCBData);  //注意：这里会出错，导致返回87号错误
 
 	if (!SetCommState(hCOMHnd, &DCBData))

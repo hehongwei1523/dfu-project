@@ -43,7 +43,7 @@ void BCSPTransport_Init( )
     //mStack ( comPort )
 }
 
-uint8 _buffers[4096] = {0};
+uint8 _buffers[128] = {0};
 
 void BCSPTransport( )
 {

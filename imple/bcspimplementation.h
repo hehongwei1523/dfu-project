@@ -118,5 +118,7 @@ extern uint16 BufferLength;
 extern uint8* download_file_buf;  //要获取的字符串  
 extern long download_file_len;    //获取的长度
 
+extern uint8 DFU_PACKET_END;
+extern uint8 DFU_FILE_END;
 //extern CRITICAL_SECTION g_cs;
 #endif

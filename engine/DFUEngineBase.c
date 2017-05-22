@@ -258,7 +258,7 @@ Result DoDownload(DFUFile file) //烧录过程
 	// Successful if this point reached
 	return success;
 }
-
+extern uint16 rcv_count;
 Result DoManifest() //复位芯片，退出DFU模式
 {
 	Result result;
@@ -267,6 +267,7 @@ Result DoManifest() //复位芯片，退出DFU模式
 	struct DFUStatus status;
 
 	printf("\n----------------DoManifest-----------------\n");
+
 	// Ensure that the transport has been started
 	Progress(manifest_start_runtime);
 	result = DoConnect(true,false);
@@ -280,7 +281,6 @@ Result DoManifest() //复位芯片，退出DFU模式
 
 	if (result) result = DoConnect(false,false);
 	if (!result) return result;
-
 #if 0
 	// Read the device descriptor to determine mode
 	result = ProgressCheck(30);
